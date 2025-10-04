@@ -15,7 +15,7 @@
 \usepackage{graphicx}   % Image support
 \usepackage{listings}   % Code highlighting support
 \usepackage{geometry}   % Page setup
-\geometry{a4paper, margin=0.8in} % Set page size and margins
+\geometry{a4paper, margin=0.5in} % Set page size and margins
 \usepackage{tikz} % TikZ drawing support
 \usetikzlibrary{mindmap, shadings}
 \usepackage{enumitem} % Enhanced list environments
@@ -53,6 +53,16 @@
     boxsep=1mm
 }
 
+\newtcolorbox{note}{
+    colback=green!5!white,
+    colframe=green!75!black,
+    title=Note,
+    fonttitle=\bfseries,
+    left=2mm,
+    right=2mm,
+    boxsep=1mm
+}
+
 % Define problem counter and environment
 \newcounter{problem}
 \newcommand{\problem}[2]{
@@ -82,4 +92,6 @@
 \input{sections/2-tokenizer.tex}
 \input{sections/3-transformer.tex}
 
+\bibliographystyle{plainnat}
+\bibliography{ref}
 \end{document}
