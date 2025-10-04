@@ -1,5 +1,4 @@
 \section{Byte-Pair Encoding (BPE) Tokenizer}
-\vspace{-1em}
 
 \problem{unicode1}{Understanding Unicode (1 point)}
 
@@ -240,7 +239,7 @@ Implement a Tokenizer class that, given a vocabulary and a list of merges, encod
     \item \lstinline{def decode(self, ids: list[int]) -> str} - Decode a sequence of token IDs into text.
 \end{itemize}
 
-To test your Tokenizer against our provided tests, you will first need to implement the test adapter at \lstinline{[adapters.get_tokenizer]}. Then, run \lstinline{uv run pytest tests/test_tokenizer.py}. Your implementation should be able to pass all tests.
+To test your Tokenizer against our provided tests, you will first need to implement the test adapter at \texttt{[adapters.get\_tokenizer]}. Then, run \texttt{uv run pytest tests/test\_tokenizer.py}. Your implementation should be able to pass all tests.
 
 \textbf{Deliverable}: A Tokenizer class that implements the interface described above.
 
