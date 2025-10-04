@@ -1,0 +1,35 @@
+\section{Transformer Language Model Architecture}
+
+\problem{linear}{Implementing the linear module (1 point)}
+
+Implement a Linear class that inherits from \lstinline{torch.nn.Module} and performs a linear transformation. Your implementation should follow the interface of PyTorch's built-in \lstinline{nn.Linear} module, except for not having a bias argument or parameter. We recommend the following interface:
+
+\begin{itemize}
+    \item \lstinline{def __init__(self, in_features, out_features, device=None, dtype=None)} - Construct a linear transformation module. This function should accept the following parameters:
+    \begin{itemize}
+        \item \lstinline{in_features: int} - final dimension of the input
+        \item \lstinline{out_features: int} - final dimension of the output
+        \item \lstinline{device: torch.device | None = None} - Device to store the parameters on
+        \item \lstinline{dtype: torch.dtype | None = None} - Datatype of the parameters
+    \end{itemize}
+    
+    \item \lstinline{def forward(self, x: torch.Tensor) -> torch.Tensor} - Apply the linear transformation to the input.
+\end{itemize}
+
+Make sure to:
+\begin{itemize}
+    \item subclass \lstinline{nn.Module}
+    \item call the superclass constructor
+    \item construct and store your parameter as $W$ (not $W^\top$) for memory ordering reasons, putting it in an \lstinline{nn.Parameter}
+    \item of course, don't use \lstinline{nn.Linear} or \lstinline{nn.functional.linear}
+\end{itemize}
+
+For initializations, use the settings from above along with \lstinline{torch.nn.init.trunc_normal_} to initialize the weights.
+
+To test your Linear module, implement the test adapter at \lstinline{[adapters.run_linear]}. The adapter should load the given weights into your Linear module. You can use \lstinline{Module.load_state_dict} for this purpose. Then, run \lstinline{uv run pytest -k test_linear}.
+
+\textbf{Deliverable}: A Linear class that implements the interface described above.
+
+\begin{answer}
+% TODO: Implement Linear module
+\end{answer}
