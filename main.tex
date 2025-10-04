@@ -15,7 +15,7 @@
 \usepackage{graphicx}   % Image support
 \usepackage{listings}   % Code highlighting support
 \usepackage{geometry}   % Page setup
-\geometry{a4paper, margin=1in} % Set page size and margins
+\geometry{a4paper, margin=0.8in} % Set page size and margins
 \usepackage{tikz} % TikZ drawing support
 \usetikzlibrary{mindmap, shadings}
 \usepackage{enumitem} % Enhanced list environments
@@ -58,7 +58,7 @@
 \newcommand{\problem}[2]{
     \stepcounter{problem}
     \subsection{Problem (\texttt{#1}): #2}
-    \vspace{-2em} % Reduce space after subsection
+    \vspace{-1.5em} % Reduce space after subsection
     \noindent
 }
 
@@ -145,9 +145,6 @@ def decode_utf8_bytes_to_str_wrong(bytestring: bytes):
     
     {\textbf{Deliverable}: An example input byte string for which \texttt{decode\_utf8\_bytes\_to\_str\_wrong} produces incorrect output, with a one-sentence explanation of why the function is incorrect.}
     
-    \begin{answer}
-    An example input byte string is \texttt{b'\textbackslash xc3\textbackslash xa9'}, which represents the character 'é' in UTF-8. The function is incorrect because \textbf{it decodes each byte individually}, leading to a \texttt{UnicodeDecodeError} since \texttt{b'\textbackslash xc3'} and \texttt{b'\textbackslash xa9'} are not valid standalone UTF-8 characters.
-    
     \begin{lstlisting}
 >>> "hello".encode("utf-8")
 b'hello'
@@ -165,13 +162,15 @@ Traceback (most recent call last):
   File "<stdin>", line 2, in decode_utf8_bytes_to_str_wrong
 UnicodeDecodeError: 'utf-8' codec can't decode byte 0xc3 in position 0: unexpected end of data
     \end{lstlisting}
+
+    \begin{answer}
+    An example input byte string is \texttt{b'\textbackslash xc3\textbackslash xa9'}, which represents the character 'é' in UTF-8. The function is incorrect because \textbf{it decodes each byte individually}, leading to a \texttt{UnicodeDecodeError} since \texttt{b'\textbackslash xc3'} and \texttt{b'\textbackslash xa9'} are not valid standalone UTF-8 characters.
     \end{answer}
     
     \item {Give a two byte sequence that does not decode to any Unicode character(s).}
     
     {\textbf{Deliverable}: An example, with a one-sentence explanation.}
     
-    \begin{answer}
     \begin{lstlisting}
 >>> b'\x80\x80'.decode("utf-8") 
 Traceback (most recent call last):
@@ -179,7 +178,231 @@ Traceback (most recent call last):
 UnicodeDecodeError: 'utf-8' codec can't decode byte 0x80 in position 0: invalid start byte
     \end{lstlisting}
 
+    \begin{answer}
     The byte sequence \texttt{b'\textbackslash x80\textbackslash x80'} does not decode to any Unicode characters because it is an invalid UTF-8 sequence; in UTF-8, continuation bytes (bytes starting with \texttt{10xxxxxx}) must follow a valid leading byte, and \texttt{0x80} cannot be a leading byte.
+    \end{answer}
+\end{enumerate}
+
+\problem{train\_bpe}{BPE Tokenizer Training (15 points)}
+
+Write a function that, given a path to an input text file, trains a (byte-level) BPE tokenizer. Your BPE training function should handle (at least) the following input parameters:
+
+\begin{itemize}
+    \item \lstinline{input_path: str} - Path to a text file with BPE tokenizer training data.
+    \item \lstinline{vocab_size: int} - A positive integer that defines the maximum final vocabulary size (including the initial byte vocabulary, vocabulary items produced from merging, and any special tokens).
+    \item \lstinline{special_tokens: list[str]} - A list of strings to add to the vocabulary. These special tokens do not otherwise affect BPE training.
+\end{itemize}
+
+Your BPE training function should return the resulting vocabulary and merges:
+
+\begin{itemize}
+    \item \lstinline{vocab: dict[int, bytes]} - The tokenizer vocabulary, a mapping from int (token ID in the vocabulary) to bytes (token bytes).
+    \item \lstinline{merges: list[tuple[bytes, bytes]]} - A list of BPE merges produced from training. Each list item is a tuple of bytes (\texttt{<token1>}, \texttt{<token2>}), representing that \texttt{<token1>} was merged with \texttt{<token2>}. The merges should be ordered by order of creation.
+\end{itemize}
+
+To test your BPE training function against our provided tests, you will first need to implement the test adapter at \texttt{[adapters.run\_train\_bpe]}. Then, run \texttt{uv run pytest tests/test\_train\_bpe.py}.
+
+Your implementation should be able to pass all tests. Optionally (this could be a large time-investment), you can implement the key parts of your training method using some systems language, for instance C++ (consider cppyy for this) or Rust (using PyO3). If you do this, be aware of which operations require copying vs reading directly from Python memory, and make sure to leave build instructions, or make sure it builds using only \texttt{pyproject.toml}. Also note that the GPT-2 regex is not well-supported in most regex engines and will be too slow in most that do. We have verified that Oniguruma is reasonably fast and supports negative lookahead, but the regex package in Python is, if anything, even faster.
+
+\textbf{Deliverable}: A function that trains a BPE tokenizer according to the specifications above.
+
+\begin{lstlisting}
+(cs336-basics) [root:assignment1-basics]$ uv run pytest tests/test_train_bpe.py
+=============================== test session starts ===============================
+platform linux -- Python 3.13.7, pytest-8.4.1, pluggy-1.6.0
+rootdir: standford-cs336/assignment1-basics
+configfile: pyproject.toml
+plugins: jaxtyping-0.3.2, hydra-core-1.3.2
+collected 3 items                                                                         
+
+tests/test_train_bpe.py::test_train_bpe_speed PASSED
+tests/test_train_bpe.py::test_train_bpe PASSED
+tests/test_train_bpe.py::test_train_bpe_special_tokens PASSED
+
+=============================== 3 passed in 22.04s ================================
+\end{lstlisting}
+
+\begin{answer}
+I have implemented a BPE tokenizer training function that can be found at: \url{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/bpe.py#L11}.
+
+The implementation successfully passes all tests in \lstinline{uv run pytest tests/test_train_bpe.py} with a runtime of approximately 22 seconds in my machine.
+\end{answer}
+
+\problem{train\_bpe\_tinystories}{BPE Training on TinyStories (2 points)}
+
+\begin{enumerate}[label=(\alph*)]
+    \item Train a byte-level BPE tokenizer on the TinyStories dataset, using a maximum vocabulary size of 10,000. Make sure to add the TinyStories \lstinline{<|endoftext|>} special token to the vocabulary. Serialize the resulting vocabulary and merges to disk for further inspection. How many hours and memory did training take? What is the longest token in the vocabulary? Does it make sense?
+    
+    \textbf{Resource requirements}: ≤30 minutes (no GPUs), ≤30 GB RAM
+    
+    \textbf{Hint}: You should be able to get under 2 minutes for BPE training using multiprocessing during pretokenization and the following two facts:
+    \begin{enumerate}[label=(\alph*)]
+        \item The \lstinline{<|endoftext|>} token delimits documents in the data files.
+        \item The \lstinline{<|endoftext|>} token is handled as a special case before the BPE merges are applied.
+    \end{enumerate}
+    
+    \textbf{Deliverable}: A one-to-two sentence response.
+    
+    \begin{answer}
+    Since my initial implementation was too slow for the TinyStories dataset, I used the \lstinline{tokenizers.trainers.BpeTrainer} from the Hugging Face tokenizers library (code available at \url{https://github.com/donglinkang2021/assignment1-basics/blob/main/data_utils/hf_train_bpe.py}). Training completed in 202.87 seconds (~3.38 minutes) with the longest token being 'Ġresponsibility' (15 characters), which makes sense as it's a complete meaningful word that appears frequently enough to be merged into a single token.
+    \end{answer}
+    
+    \item Profile your code. What part of the tokenizer training process takes the most time?
+    
+    \textbf{Deliverable}: A one-to-two sentence response.
+    
+    \begin{answer}
+    Based on the training output, the pre-processing phase (reading and processing the 2250 MB TinyStories files) took the majority of the time at over 3 minutes, while the actual BPE merge computation was completed very quickly in under a second.
+    \end{answer}
+\end{enumerate}
+
+\problem{train\_bpe\_expts\_owt}{BPE Training on OpenWebText (2 points)}
+
+\begin{enumerate}[label=(\alph*)]
+    \item Train a byte-level BPE tokenizer on the OpenWebText dataset, using a maximum vocabulary size of 32,000. Serialize the resulting vocabulary and merges to disk for further inspection. What is the longest token in the vocabulary? Does it make sense?
+    
+    \textbf{Resource requirements}: ≤12 hours (no GPUs), ≤100 GB RAM
+    
+    \textbf{Deliverable}: A one-to-two sentence response.
+    
+    \begin{answer}
+    Training on OpenWebText completed in 1045.20 seconds (~17.42 minutes) with the longest token being a 64-character dash line \lstinline{'----------------------------------------------------------------'}, which makes sense as such formatting patterns are common in web text and code documentation found in the OpenWebText dataset.
+    \end{answer}
+
+    \item Compare and contrast the tokenizer that you get training on TinyStories versus OpenWebText.
+
+    \textbf{Deliverable}: A one-to-two sentence response.
+
+    \begin{lstlisting}
+(cs336-basics) [root:assignment1-basics]$ python data_utils/compare_tokenizer_demo.py 
+TinyStories vocab size: 10000
+OpenWebText vocab size: 32000
+TinyStories avg token length: 5.83
+OpenWebText avg token length: 6.34
+Character distribution:
+TinyStories: {'alphabetic': 58120, 'special': 151, 'numeric': 19}
+OpenWebText: {'alphabetic': 199840, 'numeric': 1699, 'special': 1395}
+Common tokens: 7283
+TinyStories unique tokens: 2717
+OpenWebText unique tokens: 24717
+
+Sample unique TinyStories tokens:
+['Ġcluck', 'aisy', 'Ġreluctantly', 'Splash', 'Ġnapkin', 'Ġpillows', 'Julie', 'Ġsqueezing', 'Ġlaug', 'Ġconn']
+
+Sample unique OpenWebText tokens:
+['ylan', 'igo', 'Ġemphas', 'Ġsuburbs', 'ĠCab', 'ĠMarine', 'liable', 'ĠBrett', 'model', 'ĠSQL']
+    \end{lstlisting}
+    \begin{answer}
+    The OpenWebText tokenizer (32k vocab) produces more diverse tokens including technical symbols and formatting patterns (avg length: 6.34 chars, 24,717 unique tokens) with terms like 'ĠMarine' and 'ĠSQL', while the TinyStories tokenizer (10k vocab) focuses on simpler narrative vocabulary (avg length: 5.83 chars, 2,717 unique tokens) with words like 'Ġcluck' and 'Ġreluctantly', with 7,283 tokens shared between both datasets reflecting common English usage (comparison code available at \url{https://github.com/donglinkang2021/assignment1-basics/blob/main/data_utils/compare_tokenizer_demo.py}).
+    \end{answer}
+\end{enumerate}
+
+
+\problem{tokenizer}{Implementing the tokenizer (15 points)}
+
+Implement a Tokenizer class that, given a vocabulary and a list of merges, encodes text into integer IDs and decodes integer IDs into text. Your tokenizer should also support user-provided special tokens (appending them to the vocabulary if they aren't already there). We recommend the following interface:
+
+\begin{itemize}
+    \item \lstinline{def __init__(self, vocab, merges, special_tokens=None)} - Construct a tokenizer from a given vocabulary, list of merges, and (optionally) a list of special tokens. This function should accept the following parameters:
+    \begin{itemize}
+        \item \lstinline{vocab: dict[int, bytes]}
+        \item \lstinline{merges: list[tuple[bytes, bytes]]}
+        \item \lstinline{special_tokens: list[str] | None = None}
+    \end{itemize}
+    
+    \item \lstinline{def from_files(cls, vocab_filepath, merges_filepath, special_tokens=None)} - Class method that constructs and returns a Tokenizer from a serialized vocabulary and list of merges (in the same format that your BPE training code output) and (optionally) a list of special tokens. This method should accept the following additional parameters:
+    \begin{itemize}
+        \item \lstinline{vocab_filepath: str}
+        \item \lstinline{merges_filepath: str}
+        \item \lstinline{special_tokens: list[str] | None = None}
+    \end{itemize}
+    
+    \item \lstinline{def encode(self, text: str) -> list[int]} - Encode an input text into a sequence of token IDs.
+    
+    \item \lstinline{def encode_iterable(self, iterable: Iterable[str]) -> Iterator[int]} - Given an iterable of strings (e.g., a Python file handle), return a generator that lazily yields token IDs. This is required for memory-efficient tokenization of large files that we cannot directly load into memory.
+    
+    \item \lstinline{def decode(self, ids: list[int]) -> str} - Decode a sequence of token IDs into text.
+\end{itemize}
+
+To test your Tokenizer against our provided tests, you will first need to implement the test adapter at \lstinline{[adapters.get_tokenizer]}. Then, run \lstinline{uv run pytest tests/test_tokenizer.py}. Your implementation should be able to pass all tests.
+
+\textbf{Deliverable}: A Tokenizer class that implements the interface described above.
+
+\begin{lstlisting}
+(cs336-basics) [root:assignment1-basics]$ uv run pytest tests/test_tokenizer.py
+======================= test session starts ========================
+platform linux -- Python 3.13.7, pytest-8.4.1, pluggy-1.6.0
+rootdir: standford-cs336/assignment1-basics
+configfile: pyproject.toml
+plugins: jaxtyping-0.3.2, hydra-core-1.3.2
+collected 25 items                                                 
+
+tests/test_tokenizer.py::test_roundtrip_empty PASSED
+tests/test_tokenizer.py::test_empty_matches_tiktoken PASSED
+tests/test_tokenizer.py::test_roundtrip_single_character PASSED
+tests/test_tokenizer.py::test_single_character_matches_tiktoken PASSED
+tests/test_tokenizer.py::test_roundtrip_single_unicode_character PASSED
+tests/test_tokenizer.py::test_single_unicode_character_matches_tiktoken PASSED
+tests/test_tokenizer.py::test_roundtrip_ascii_string PASSED
+tests/test_tokenizer.py::test_ascii_string_matches_tiktoken PASSED
+tests/test_tokenizer.py::test_roundtrip_unicode_string PASSED
+tests/test_tokenizer.py::test_unicode_string_matches_tiktoken PASSED
+tests/test_tokenizer.py::test_roundtrip_unicode_string_with_special_tokens PASSED
+tests/test_tokenizer.py::test_unicode_string_with_special_tokens_matches_tiktoken PASSED
+tests/test_tokenizer.py::test_overlapping_special_tokens PASSED
+tests/test_tokenizer.py::test_address_roundtrip PASSED
+tests/test_tokenizer.py::test_address_matches_tiktoken PASSED
+tests/test_tokenizer.py::test_german_roundtrip PASSED
+tests/test_tokenizer.py::test_german_matches_tiktoken PASSED
+tests/test_tokenizer.py::test_tinystories_sample_roundtrip PASSED
+tests/test_tokenizer.py::test_tinystories_matches_tiktoken PASSED
+tests/test_tokenizer.py::test_encode_special_token_trailing_newlines PASSED
+tests/test_tokenizer.py::test_encode_special_token_double_newline_non_whitespace PASSED
+tests/test_tokenizer.py::test_encode_iterable_tinystories_sample_roundtrip PASSED
+tests/test_tokenizer.py::test_encode_iterable_tinystories_matches_tiktoken PASSED
+tests/test_tokenizer.py::test_encode_iterable_memory_usage PASSED
+tests/test_tokenizer.py::test_encode_memory_usage XFAIL
+
+================== 24 passed, 1 xfailed in 14.70s ==================
+\end{lstlisting}
+
+\begin{answer}
+Code available at: \url{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/tokenizer.py}
+\end{answer}
+
+\problem{tokenizer\_experiments}{Experiments with tokenizers (4 points)}
+
+\begin{enumerate}[label=(\alph*)]
+    \item Sample 10 documents from TinyStories and OpenWebText. Using your previously-trained TinyStories and OpenWebText tokenizers (10K and 32K vocabulary size, respectively), encode these sampled documents into integer IDs. What is each tokenizer's compression ratio (bytes/token)?
+    
+    \textbf{Deliverable}: A one-to-two sentence response.
+    
+    \begin{answer}
+    The TinyStories tokenizer (10K vocab) achieves 4.19 bytes/token compression ratio, while the OpenWebText tokenizer (32K vocab) achieves 4.65 bytes/token, showing that the larger vocabulary provides better compression efficiency for diverse web content (experiment code available at \url{https://github.com/donglinkang2021/assignment1-basics/blob/main/data_utils/tokenizer_experiments.py}).
+    \end{answer}
+
+    \item What happens if you tokenize your OpenWebText sample with the TinyStories tokenizer? Compare the compression ratio and/or qualitatively describe what happens.
+
+    \textbf{Deliverable}: A one-to-two sentence response.
+
+    \begin{answer}
+    Using TinyStories tokenizer on OpenWebText data results in 3.32 bytes/token compared to 4.65 bytes/token with the native tokenizer, showing a 28.6\% degradation due to vocabulary mismatch and increased unknown token fragmentation.
+    \end{answer}
+
+    \item Estimate the throughput of your tokenizer (e.g., in bytes/second). How long would it take to tokenize the Pile dataset (825 GB of text)?
+
+    \textbf{Deliverable}: A one-to-two sentence response.
+
+    \begin{answer}
+    The tokenizer achieves approximately 2.85 MB/s throughput, suggesting it would take around 82.3 hours (~3.4 days) to tokenize the entire Pile dataset (825 GB of text).
+    \end{answer}
+
+    \item Using your TinyStories and OpenWebText tokenizers, encode the respective training and development datasets into a sequence of integer token IDs. We'll use this later to train our language model. We recommend serializing the token IDs as a NumPy array of data type \lstinline{uint16}. Why is \lstinline{uint16} an appropriate choice?
+
+    \textbf{Deliverable}: A one-to-two sentence response.
+
+    \begin{answer}
+    \lstinline{uint16} is appropriate because it can represent values up to 65,535, which easily accommodates our vocabulary sizes (10K and 32K tokens), while being twice as memory-efficient as \lstinline{uint32} (1.9 MB vs 3.8 MB per 1M tokens) and avoiding the 255 value limit of \lstinline{uint8}. The code to encode the datasets into \lstinline{uint16} arrays and save them as \texttt{train.bin} and \texttt{val.bin} is available at \url{https://github.com/donglinkang2021/assignment1-basics/blob/main/data_utils/hf_tokenize_data.py}.
     \end{answer}
 \end{enumerate}
 
