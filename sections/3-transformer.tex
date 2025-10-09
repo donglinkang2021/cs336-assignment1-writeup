@@ -855,6 +855,6 @@ class TransformerLM(nn.Module):
     \textbf{Deliverable}: A one-to-two sentence response.
     
     \begin{answer}
-    Increasing context length from 1,024 to 16,384 ($16\times$ increase) results in total FLOPs increasing by approximately $33\times$ to $\sim149.5$ trillion FLOPs, with attention computation scaling quadratically ($256\times$ increase) while feed-forward computation scales linearly ($16\times$ increase). This shifts the computational balance such that attention now consumes approximately 65.9\% of total FLOPs instead of 29.4\%, making attention the dominant computational bottleneck at very long sequences.
+    Increasing context length from 1,024 to 16,384 (16$\times$ increase) results in total FLOPs increasing by approximately 33$\times$ to ~149.5 trillion FLOPs, with attention computation scaling quadratically (74$\times$ increase) while feed-forward computation scales linearly (16$\times$ increase). This dramatically shifts the computational balance: attention now dominates with 65.9\% of total FLOPs (compared to 29.4\% at shorter sequences), feed-forward drops to 32.3\% (from 66.9\%), and embeddings become negligible at 1.8\% (from 3.6\%), making attention the primary computational bottleneck at very long sequences.
     \end{answer}
 \end{enumerate}
