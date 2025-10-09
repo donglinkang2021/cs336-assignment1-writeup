@@ -1,0 +1,53 @@
+\section{Training a Transformer LM}
+
+\problem{cross\_entropy}{Implement Cross entropy (2 points)}
+
+\textbf{Deliverable}: Write a function to compute the cross entropy loss, which takes in predicted logits ($o_i$) and targets ($x_{i+1}$) and computes the cross entropy $\ell_i = -\log \text{softmax}(o_i)[x_{i+1}]$. Your function should handle the following:
+
+\begin{itemize}
+    \item Subtract the largest element for numerical stability.
+    \item Cancel out log and exp whenever possible.
+    \item Handle any additional batch dimensions and return the average across the batch. As with section 3.3, we assume batch-like dimensions always come first, before the vocabulary size dimension.
+\end{itemize}
+
+Implement \lstinline{[adapters.run_cross_entropy]}, then run \lstinline{uv run pytest -k test_cross_entropy} to test your implementation.
+
+\begin{answer}
+The essence of implementing \lstinline{cross_entropy} is computing \lstinline{log_softmax}. We can derive the formula for \lstinline{log_softmax}. Let \lstinline{logits} be $l$, then:
+
+\begin{equation*}
+\begin{aligned}
+\log \mathrm{softmax}(l_i) &= \log \frac{\exp(l_i)}{\sum_j \exp(l_j)} \\
+&= l_i - \log \sum_j \exp(l_j)
+\end{aligned}
+\end{equation*}
+
+Therefore, the following two computation methods are equivalent:
+
+\begin{lstlisting}
+logits = model(input)  # B,T,V
+log_softmax1 = logits.log_softmax(dim=-1)  # B,T,V
+log_softmax2 = logits - logits.logsumexp(dim=-1, keepdim=True)  # B,T,V
+\end{lstlisting}
+
+By using the \lstinline{logsumexp} function, we avoid explicitly computing \lstinline{exp} and \lstinline{log} operations, thereby improving numerical stability and reducing computational overhead. This approach directly computes $\log \mathrm{softmax}$, then uses \lstinline{gather} operations to obtain the log probabilities for target classes, and finally takes the negative value to get the cross-entropy loss.
+\end{answer}
+
+\begin{lstlisting}
+# uv run pytest -k test_cross_entropy
+def cross_entropy(inputs:torch.Tensor, targets:torch.Tensor) -> torch.Tensor:
+    # (batch_size, num_classes), (batch_size,) -> scalar
+    inputs = inputs - inputs.max(dim=-1, keepdim=True).values  # for numerical stability
+    log_probs = inputs - torch.logsumexp(inputs, dim=-1, keepdim=True)
+    return -log_probs.gather(dim=-1, index=targets.unsqueeze(-1)).squeeze(-1).mean()
+\end{lstlisting}
+
+\problem{learning\_rate\_tuning}{Tuning the learning rate (1 point)}
+
+As we will see, one of the hyperparameters that affects training the most is the learning rate. Let's see that in practice in our toy example. Run the SGD example above with three other values for the learning rate: 1e1, 1e2, and 1e3, for just 10 training iterations. What happens with the loss for each of these learning rates? Does it decay faster, slower, or does it diverge (i.e., increase over the course of training)?
+
+\textbf{Deliverable}: A one-two sentence response with the behaviors you observed.
+
+\begin{answer}
+For learning rates 1e1 and 1e2, the loss decays faster (1e2 > 1e1 > 1), while for 1e3, the loss diverges, indicating that too high a learning rate can lead to instability in training. This demonstrates that while higher learning rates can accelerate convergence up to a point, there exists a critical threshold beyond which training becomes unstable and the optimization process fails.
+\end{answer}
