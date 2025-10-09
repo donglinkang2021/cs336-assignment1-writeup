@@ -1,0 +1,50 @@
+% filepath: c:\Users\dongl\Desktop\cs336-assignment1-writeup\sections\appendix.tex
+\section{Parameter Calculation Verification}
+\label{sec:param-verification}
+
+To verify that our parameter calculation formula is correct, we provide the following verification code that compares the actual parameter count from a PyTorch model with our analytical formula:
+
+\begin{lstlisting}[language=Python, caption={Parameter count verification code}]
+from cs336_basics.model import TransformerLM
+
+model_cfg = dict(
+    vocab_size=10000,
+    context_length=256,
+    d_model=512,
+    num_layers=4,
+    num_heads=16,
+    d_ff=1344, 
+    rope_theta=10000,
+)
+
+model = TransformerLM(**model_cfg)
+total_params = sum(p.numel() for p in model.parameters())
+
+def compute_model_size_from_scratch(
+    vocab_size: int,
+    context_length: int,
+    d_model: int,
+    num_layers: int,
+    num_heads: int,
+    d_ff: int,
+    **kwargs
+):
+    total_params = 0
+    total_params += vocab_size * d_model  # token embedding
+    total_params += num_layers * ( # per block
+        4 * (d_model * d_model) +  # Q, K, V, O projections
+        3 * (d_model * d_ff) +     # SwiGLU layers
+        2 * (d_model)              # RMSNorm layers
+    )
+    total_params += d_model  # final RMSNorm
+    total_params += d_model * vocab_size  # output projection
+    return total_params
+
+print(f"Total number of parameters: {total_params}")     
+print("Computed model size from scratch:", compute_model_size_from_scratch(**model_cfg))
+
+"""output
+Total number of parameters: 22696448
+Computed model size from scratch: 22696448
+"""
+\end{lstlisting}
