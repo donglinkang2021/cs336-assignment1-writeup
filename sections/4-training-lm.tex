@@ -239,3 +239,52 @@ Let us compute how much memory and compute running AdamW requires. Assume we are
     \end{answer}
 \end{enumerate}
 
+\problem{learning\_rate\_schedule}{Implement cosine learning rate schedule with warmup (2 points)}
+
+\textbf{(Warm-up)}: If $t < T_w$, then $\alpha_t = \frac{t}{T_w} \alpha_{\max}$.
+
+\textbf{(Cosine annealing)}: If $T_w \leq t \leq T_c$, then $\alpha_t = \alpha_{\min} + \frac{1}{2}\left(1 + \cos\left(\frac{t - T_w}{T_c - T_w} \pi\right)\right)(\alpha_{\max} - \alpha_{\min})$.
+
+\textbf{(Post-annealing)}: If $t > T_c$, then $\alpha_t = \alpha_{\min}$.
+
+Write a function that takes $t$, $\alpha_{\max}$, $\alpha_{\min}$, $T_w$ and $T_c$, and returns the learning rate $\alpha_t$ according to the scheduler defined above. Then implement \texttt{[adapters.get\_lr\_cosine\_schedule]} and make sure it passes \texttt{uv run pytest -k test\_get\_lr\_cosine\_schedule}.
+
+\begin{answer}
+    Code is available at \url{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/optimizer.py#L183}.
+\end{answer}
+
+\begin{lstlisting}
+(cs336-basics) [root:assignment1-basics]$ uv run pytest -k test_get_lr_cosine_schedule
+======================== test session starts =========================
+platform linux -- Python 3.13.7, pytest-8.4.1, pluggy-1.6.0
+rootdir: standford-cs336/assignment1-basics
+configfile: pyproject.toml
+plugins: jaxtyping-0.3.2, hydra-core-1.3.2
+collected 48 items / 47 deselected / 1 selected                      
+
+tests/test_optimizer.py::test_get_lr_cosine_schedule PASSED
+
+================== 1 passed, 47 deselected in 4.31s ==================
+\end{lstlisting}
+
+\problem{gradient\_clipping}{Implement gradient clipping (1 point)}
+
+Write a function that implements gradient clipping. Your function should take a list of parameters and a maximum $\ell_2$-norm. It should modify each parameter gradient in place. Use $\epsilon = 10^{-6}$ (the PyTorch default). Then, implement the adapter \lstinline{[adapters.run_gradient_clipping]} and make sure it passes \lstinline{uv run pytest -k test_gradient_clipping}.
+
+\begin{answer}
+Code is available at \url{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/nn_utils.py#L27}.
+\end{answer}
+
+\begin{lstlisting}
+(cs336-basics) [root:assignment1-basics]$ uv run pytest -k test_gradient_clipping
+======================== test session starts =========================
+platform linux -- Python 3.13.7, pytest-8.4.1, pluggy-1.6.0
+rootdir: standford-cs336/assignment1-basics
+configfile: pyproject.toml
+plugins: jaxtyping-0.3.2, hydra-core-1.3.2
+collected 48 items / 47 deselected / 1 selected                      
+
+tests/test_nn_utils.py::test_gradient_clipping PASSED
+
+================== 1 passed, 47 deselected in 2.81s ==================
+\end{lstlisting}
