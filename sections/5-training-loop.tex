@@ -5,7 +5,7 @@
 \textbf{Deliverable}: Write a function that takes a numpy array \lstinline{x} (integer array with token IDs), a \lstinline{batch_size}, a \lstinline{context_length} and a PyTorch device string (e.g., \lstinline{'cpu'} or \lstinline{'cuda:0'}), and returns a pair of tensors: the sampled input sequences and the corresponding next-token targets. Both tensors should have shape \lstinline{(batch_size, context_length)} containing token IDs, and both should be placed on the requested device. To test your implementation against our provided tests, you will first need to implement the test adapter at \lstinline{[adapters.run_get_batch]}. Then, run \lstinline{uv run pytest -k test_get_batch} to test your implementation.
 
 \begin{answer}
-    Code is available at \url{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/data.py#L6-L25}
+    Code is available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/data.py#L6-L25}{data.py\#L6-L25}.
 \end{answer}
 
 \begin{lstlisting}
@@ -48,7 +48,7 @@ This function expects the following parameters:
 \textbf{Deliverable}: Implement the \lstinline{[adapters.run_save_checkpoint]} and \lstinline{[adapters.run_load_checkpoint]} adapters, and make sure they pass \lstinline{uv run pytest -k test_checkpointing}.
 
 \begin{answer}
-Code is available at \url{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/checkpoint.py}. P.S. I also consider there might be \lstinline{list} of optimizers(when implement the muon optimizer).
+Code is available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/checkpoint.py}{checkpoint.py}. P.S. I also consider there might be \lstinline{list} of optimizers(when implement the muon optimizer).
 \end{answer}
 
 \begin{lstlisting}
