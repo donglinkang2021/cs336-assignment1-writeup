@@ -1,0 +1,72 @@
+\section{Experiments}
+
+\problem{experiment\_log}{Experiment logging (3 points)}
+
+For your training and evaluation code, create experiment tracking infrastructure that allows you to track your experiments and loss curves with respect to gradient steps and wallclock time.
+
+\textbf{Deliverable}: Logging infrastructure code for your experiments and an experiment log (a document of all the things you tried) for the assignment problems below in this section.
+
+\begin{answer}
+I implemented comprehensive experiment tracking infrastructure using Weights \& Biases (wandb) integrated with Hydra for configuration management. The logging system tracks training and validation losses, learning rates, gradient norms, and wallclock time (recorded by wandb automatically) across all experiments.
+
+All experiment configurations and results are systematically logged and can be accessed through the wandb dashboard for analysis and comparison.
+
+Code is available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/train.py}{train.py}.
+\end{answer}
+
+\begin{lstlisting}
+# Training script with comprehensive logging infrastructure
+import hydra
+from cs336_basics.logger import Logger
+from cs336_basics.config import TrainConfig
+
+@hydra.main(config_path="conf", config_name="train_config", version_base=None)
+def main(cfg: TrainConfig) -> None:
+    # Initialize logger with Hydra configuration
+    logger = Logger(cfg)
+    output_dir = Path(HydraConfig.get().runtime.output_dir)
+    
+    # ... model and data setup ...
+    
+    # Training loop with comprehensive logging
+    for it in tqdm(range(start_iter, cfg.training.max_iters), desc="Training"):
+        # ... forward/backward pass ...
+        
+        # Training metrics logging
+        if it % cfg.training.log_interval == 0:
+            ent = compute_entropy_chunked(logits).mean()
+            logger.log_metrics({
+                'train/loss': loss.item(), 
+                'train/ppl': loss.exp().item(),
+                'train/lr': lr,
+                'train/entropy': ent.item(),
+                'train/grad_norm': grad_norm
+            }, step=it)
+            
+        # Validation logging
+        if it % cfg.training.eval_interval == 0:
+            metrics = evaluate(model, val_data, cfg, device)
+            logger.log_metrics({
+                'val/loss': metrics['val/loss'],
+                'val/ppl': metrics['val/ppl'], 
+                'val/entropy': metrics['val/entropy']
+            }, step=it)
+    
+    # Log generated text samples
+    generated_output = generate_text(model, tokenizer, ...)
+    logger.log_text("Generated Text", generated_output, step=cfg.training.max_iters)
+    
+    logger.close()
+    # Save final configuration
+    OmegaConf.save(cfg, output_dir / 'config.yaml')
+
+@torch.no_grad()
+def evaluate(model, data, cfg, device):
+    """Evaluation with entropy and perplexity tracking."""
+    # ... evaluation loop ...
+    return {
+        'val/loss': mean_loss,
+        'val/ppl': np.exp(mean_loss),
+        'val/entropy': np.mean(entropies)
+    }
+\end{lstlisting}
