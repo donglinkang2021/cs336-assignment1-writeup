@@ -704,7 +704,7 @@ class TransformerLM(nn.Module):
     \textbf{Deliverable}: A list of matrix multiplies (with descriptions), and the total number of FLOPs required.
     
     \begin{answer}
-    Per layer matrix multiplies are listed in the following table \ref{tab:gpt2xl_flops}, where $T$ = sequence length, $d_{\text{model}}$ = model dimension, $d_{\text{ff}}$ = feed-forward dimension, $d_k$ = head dimension, $h$ = number of heads, $V$ = vocabulary size.
+    Per layer matrix multiplies are listed in the following table \ref{tab:gpt2xl_flops}. 
     Total per layer: $90,596,966,400 \approx 90.6\text{B FLOPs}$, and for 48 layers: $4,348,654,387,200 \approx 4.35$ trillion FLOPs, and for final projection: $2 \times 1,024 \times 1,600 \times 50,257 = 165,566,873,600 \approx 165.57\text{B FLOPs}$, so the total is $4,514,221,260,800 \approx 4.51$ trillion FLOPs.
     \end{answer}
 
@@ -712,40 +712,34 @@ class TransformerLM(nn.Module):
     \centering
     \caption{Matrix multiplications and FLOP calculations for GPT-2 XL forward pass}
     \label{tab:gpt2xl_flops}
-    \scalebox{1}{
-    \begin{tabular}{|l|l|l|l|}
-    \hline
+    \scalebox{0.9}{
+    \begin{tabular}{llll}
+    \toprule
     \textbf{Operation} & \textbf{Mathematical Formula} & \textbf{FLOP Formula} & \textbf{GPT-2 XL Calculation} \\
-    \hline
+    \midrule
     Q projection & $Q = W_Q \cdot X$ & $2 \times T \times d_{\text{model}} \times d_{\text{model}}$ & $2 \times 1024 \times 1600 \times 1600 = 5.24$B \\
-    \hline
     K projection & $K = W_K \cdot X$ & $2 \times T \times d_{\text{model}} \times d_{\text{model}}$ & $2 \times 1024 \times 1600 \times 1600 = 5.24$B \\
-    \hline
     V projection & $V = W_V \cdot X$ & $2 \times T \times d_{\text{model}} \times d_{\text{model}}$ & $2 \times 1024 \times 1600 \times 1600 = 5.24$B \\
-    \hline
-    Attention scores & $S = Q \cdot K^T / \sqrt{d_k}$ & $2 \times h \times T \times d_k \times T$ & $2 \times 25 \times 1024 \times 64 \times 1024 = 3.36$B \\
-    \hline
-    Attention output & $A = S \cdot V$ & $2 \times h \times T \times T \times d_k$ & $2 \times 25 \times 1024 \times 1024 \times 64 = 3.36$B \\
-    \hline
     Output projection & $O = W_O \cdot A$ & $2 \times T \times d_{\text{model}} \times d_{\text{model}}$ & $2 \times 1024 \times 1600 \times 1600 = 5.24$B \\
-    \hline
+    \addlinespace
+    Attention scores & $S = Q \cdot K^T / \sqrt{d_k}$ & $2 \times h \times T \times d_k \times T$ & $2 \times 25 \times 1024 \times 64 \times 1024 = 3.36$B \\
+    Attention output & $A = S \cdot V$ & $2 \times h \times T \times T \times d_k$ & $2 \times 25 \times 1024 \times 1024 \times 64 = 3.36$B \\
+    \addlinespace
     SwiGLU $W_1$ & $G_1 = W_1 \cdot X$ & $2 \times T \times d_{\text{model}} \times d_{\text{ff}}$ & $2 \times 1024 \times 1600 \times 6400 = 20.97$B \\
-    \hline
     SwiGLU $W_2$ & $Y = W_2 \cdot G_{\text{activated}}$ & $2 \times T \times d_{\text{ff}} \times d_{\text{model}}$ & $2 \times 1024 \times 6400 \times 1600 = 20.97$B \\
-    \hline
     SwiGLU $W_3$ & $G_3 = W_3 \cdot X$ & $2 \times T \times d_{\text{model}} \times d_{\text{ff}}$ & $2 \times 1024 \times 1600 \times 6400 = 20.97$B \\
-    \hline
-    \multicolumn{3}{|r|}{\textbf{Total per layer:}} & \textbf{90.6B FLOPs} \\
-    \hline
-    \multicolumn{3}{|r|}{\textbf{48 layers total:}} & \textbf{4.35T FLOPs} \\
-    \hline
+    \midrule
+    \multicolumn{3}{r}{\textbf{Total per layer:}} & \textbf{90.6B FLOPs} \\
+    \multicolumn{3}{r}{\textbf{48 layers total:}} & \textbf{4.35T FLOPs} \\
+    \midrule
     Final projection & $\text{logits} = W_{\text{lm}} \cdot H$ & $2 \times T \times d_{\text{model}} \times V$ & $2 \times 1024 \times 1600 \times 50257 = 165.57$B \\
-    \hline
-    \multicolumn{3}{|r|}{\textbf{Grand total:}} & \textbf{4.51T FLOPs} \\
-    \hline
+    \midrule
+    \multicolumn{3}{r}{\textbf{Grand total:}} & \textbf{4.51T FLOPs} \\
+    \bottomrule
     \end{tabular}
     }
     \end{table}
+    {\small\textit{Note:} where $T$ = sequence length, $d_{\text{model}}$ = model dimension, $d_{\text{ff}}$ = feed-forward dimension, $d_k$ = head dimension, $h$ = number of heads, $V$ = vocabulary size.}
     
     \item Based on your analysis above, which parts of the model require the most FLOPs?
     
@@ -783,11 +777,11 @@ class TransformerLM(nn.Module):
     \centering
     \caption{GPT-2 model configurations and computational requirements comparison}
     \label{tab:gpt2-comparison}
-    \scalebox{1}{
-    \begin{tabular}{|l|l|l|}
-    \hline
-    \textbf{Our Model} & \textbf{Configuration} & \textbf{FLOP Breakdown (per forward pass)} \\
-    \hline
+    \scalebox{0.85}{
+    \begin{tabular}{lll}
+    \toprule
+    \textbf{Model} & \textbf{Configuration} & \textbf{FLOP Breakdown (per forward pass)} \\
+    \midrule
     GPT-2 Small & 
     \begin{tabular}{@{}l@{}}
     $N_{\text{layer}} = 12$ \\
@@ -796,12 +790,12 @@ class TransformerLM(nn.Module):
     $d_{\text{ff}} = 3072$
     \end{tabular} & 
     \begin{tabular}{@{}l@{}}
-    Attention: $\sim$27.6\% (0.10T FLOPs) \\
-    FFN: $\sim$49.8\% (0.17T FLOPs) \\
-    Embeddings: $\sim$22.6\% (0.08T FLOPs) \\
+    Attention: 27.6\% (0.10T FLOPs) \\
+    FFN: 49.8\% (0.17T FLOPs) \\
+    Embeddings: 22.6\% (0.08T FLOPs) \\
     \textbf{Total: 0.35T FLOPs}
     \end{tabular} \\
-    \hline
+    \midrule
     GPT-2 Medium & 
     \begin{tabular}{@{}l@{}}
     $N_{\text{layer}} = 24$ \\
@@ -810,12 +804,12 @@ class TransformerLM(nn.Module):
     $d_{\text{ff}} = 4096$
     \end{tabular} & 
     \begin{tabular}{@{}l@{}}
-    Attention: $\sim$29.9\% (0.31T FLOPs) \\
-    FFN: $\sim$59.9\% (0.62T FLOPs) \\
-    Embeddings: $\sim$10.2\% (0.11T FLOPs) \\
+    Attention: 29.9\% (0.31T FLOPs) \\
+    FFN: 59.9\% (0.62T FLOPs) \\
+    Embeddings: 10.2\% (0.11T FLOPs) \\
     \textbf{Total: 1.03T FLOPs}
     \end{tabular} \\
-    \hline
+    \midrule
     GPT-2 Large & 
     \begin{tabular}{@{}l@{}}
     $N_{\text{layer}} = 36$ \\
@@ -824,12 +818,12 @@ class TransformerLM(nn.Module):
     $d_{\text{ff}} = 5120$
     \end{tabular} & 
     \begin{tabular}{@{}l@{}}
-    Attention: $\sim$30.0\% (0.68T FLOPs) \\
-    FFN: $\sim$64.2\% (1.45T FLOPs) \\
-    Embeddings: $\sim$5.8\% (0.13T FLOPs) \\
+    Attention: 30.0\% (0.68T FLOPs) \\
+    FFN: 64.2\% (1.45T FLOPs) \\
+    Embeddings: 5.8\% (0.13T FLOPs) \\
     \textbf{Total: 2.26T FLOPs}
     \end{tabular} \\
-    \hline
+    \midrule
     GPT-2 XL & 
     \begin{tabular}{@{}l@{}}
     $N_{\text{layer}} = 48$ \\
@@ -838,17 +832,16 @@ class TransformerLM(nn.Module):
     $d_{\text{ff}} = 6400$
     \end{tabular} & 
     \begin{tabular}{@{}l@{}}
-    Attention: $\sim$29.4\% (1.33T FLOPs) \\
-    FFN: $\sim$66.9\% (3.02T FLOPs) \\
-    Embeddings: $\sim$3.6\% (0.16T FLOPs) \\
+    Attention: 29.4\% (1.33T FLOPs) \\
+    FFN: 66.9\% (3.02T FLOPs) \\
+    Embeddings: 3.6\% (0.16T FLOPs) \\
     \textbf{Total: 4.51T FLOPs}
     \end{tabular} \\
-    \hline
+    \bottomrule
     \end{tabular}
     }
-    \end{table}
-    
-    \textit{Note:} All calculations assume sequence length $T = 1024$. $N_{\text{layer}}$ = number of transformer layers, $d_{\text{model}}$ = model dimension, $h$ = number of attention heads, $d_{\text{ff}} = 4 \times d_{\text{model}}$ following \citet{radford2019language}.
+    \end{table}    
+    {\small\textit{Note:} All calculations assume sequence length $T = 1024$. $N_{\text{layer}}$ = number of transformer layers, $d_{\text{model}}$ = model dimension, $h$ = number of attention heads, $d_{\text{ff}} = 4 \times d_{\text{model}}$ following \citet{radford2019language}.}
 
     \item Take GPT-2 XL and increase the context length to 16,384. How does the total FLOPs for one forward pass change? How do the relative contribution of FLOPs of the model components change?
     

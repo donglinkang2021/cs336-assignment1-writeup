@@ -192,37 +192,26 @@ Let us compute how much memory and compute running AdamW requires. Assume we are
     \centering
     \caption{FLOP breakdown for AdamW optimizer per training step}
     \label{tab:adamw-flops}
-    \scalebox{1}{
-    \begin{tabular}{|l|l|c|l|}
-    \hline
+    \scalebox{0.9}{
+    \begin{tabular}{llcl}
+    \toprule
     \textbf{Operation} & \textbf{Mathematical Formula} & \textbf{FLOPs/P} & \textbf{Description} \\
-    \hline
+    \midrule
     Weight decay & $\theta \leftarrow \theta - \alpha\lambda\theta$ & 2 & 1 mul + 1 sub \\
-    \hline
     First moment & $m_t = \beta_1 m_{t-1} + (1-\beta_1) g_t$ & 3 & 2 mul + 1 add \\
-    \hline
     Gradient square & $g_t^2$ & 1 & 1 mul \\
-    \hline
     Second moment & $v_t = \beta_2 v_{t-1} + (1-\beta_2) g_t^2$ & 3 & 2 mul + 1 add \\
-    \hline
     Bias correction (m) & $\hat{m}_t = m_t/(1-\beta_1^t)$ & 1 & 1 mul \\
-    \hline
     Bias correction (v) & $\hat{v}_t = v_t/(1-\beta_2^t)$ & 1 & 1 mul \\
-    \hline
     Square root & $\sqrt{\hat{v}_t}$ & 1 & 1 sqrt \\
-    \hline
     Add epsilon & $\sqrt{\hat{v}_t} + \epsilon$ & 1 & 1 add \\
-    \hline
     Division & $\hat{m}_t/(\sqrt{\hat{v}_t} + \epsilon)$ & 1 & 1 div \\
-    \hline
     Scale by lr & $\alpha \cdot \hat{m}_t/(\sqrt{\hat{v}_t} + \epsilon)$ & 1 & 1 mul \\
-    \hline
     Parameter update & $\theta \leftarrow \theta - \alpha \hat{m}_t/(\sqrt{\hat{v}_t} + \epsilon)$ & 1 & 1 sub \\
-    \hline
-    \multicolumn{3}{|r|}{\textbf{Total per parameter:}} & \textbf{16 FLOPs} \\
-    \hline
-    \multicolumn{3}{|r|}{\textbf{Total for model:}} & \textbf{16P FLOPs} \\
-    \hline
+    \midrule
+    \multicolumn{3}{r}{\textbf{Total per parameter:}} & \textbf{16 FLOPs} \\
+    \multicolumn{3}{r}{\textbf{Total for model:}} & \textbf{16P FLOPs} \\
+    \bottomrule
     \end{tabular}
     }
     \end{table}
@@ -249,3 +238,4 @@ Let us compute how much memory and compute running AdamW requires. Assume we are
     Time required: $(5.54 \times 10^{21}) / (9.75 \times 10^{12}) \approx 5.68 \times 10^{8}$ seconds $\approx 157778$ hours  $\approx 6574$ days $\approx 18$ years
     \end{answer}
 \end{enumerate}
+
