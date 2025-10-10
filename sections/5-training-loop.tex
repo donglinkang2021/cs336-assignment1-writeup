@@ -1,0 +1,94 @@
+\section{Training Loop}
+
+\problem{data\_loading}{Implement data loading (2 points)}
+
+\textbf{Deliverable}: Write a function that takes a numpy array \lstinline{x} (integer array with token IDs), a \lstinline{batch_size}, a \lstinline{context_length} and a PyTorch device string (e.g., \lstinline{'cpu'} or \lstinline{'cuda:0'}), and returns a pair of tensors: the sampled input sequences and the corresponding next-token targets. Both tensors should have shape \lstinline{(batch_size, context_length)} containing token IDs, and both should be placed on the requested device. To test your implementation against our provided tests, you will first need to implement the test adapter at \lstinline{[adapters.run_get_batch]}. Then, run \lstinline{uv run pytest -k test_get_batch} to test your implementation.
+
+\begin{answer}
+    Code is available at \url{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/data.py#L6-L25}
+\end{answer}
+
+\begin{lstlisting}
+(cs336-basics) [root:assignment1-basics]$ uv run pytest -k test_get_batch
+======================== test session starts =========================
+platform linux -- Python 3.13.7, pytest-8.4.1, pluggy-1.6.0
+rootdir: standford-cs336/assignment1-basics
+configfile: pyproject.toml
+plugins: jaxtyping-0.3.2, hydra-core-1.3.2
+collected 48 items / 47 deselected / 1 selected                      
+
+tests/test_data.py::test_get_batch PASSED
+
+================== 1 passed, 47 deselected in 3.09s ==================
+\end{lstlisting}
+
+\problem{checkpointing}{Implement model checkpointing (1 point)}
+
+Implement the following two functions to load and save checkpoints:
+
+\texttt{def save\_checkpoint(model, optimizer, iteration, out)} should dump all the state from the first three parameters into the file-like object \texttt{out}. You can use the \texttt{state\_dict} method of both the model and the optimizer to get their relevant states and use \texttt{torch.save(obj, out)} to dump \texttt{obj} into \texttt{out} (PyTorch supports either a path or a file-like object here). A typical choice is to have \texttt{obj} be a dictionary, but you can use whatever format you want as long as you can load your checkpoint later.
+
+This function expects the following parameters:
+\begin{itemize}
+    \item \texttt{model}: \texttt{torch.nn.Module}
+    \item \texttt{optimizer}: \texttt{torch.optim.Optimizer}
+    \item \texttt{iteration}: \texttt{int}
+    \item \texttt{out}: \texttt{str | os.PathLike | typing.BinaryIO | typing.IO[bytes]}
+\end{itemize}
+
+\texttt{def load\_checkpoint(src, model, optimizer)} should load a checkpoint from \texttt{src} (path or file-like object), and then recover the model and optimizer states from that checkpoint. Your function should return the iteration number that was saved to the checkpoint. You can use \texttt{torch.load(src)} to recover what you saved in your \texttt{save\_checkpoint} implementation, and the \texttt{load\_state\_dict} method in both the model and optimizers to return them to their previous states.
+
+This function expects the following parameters:
+\begin{itemize}
+    \item \texttt{src}: \texttt{str | os.PathLike | typing.BinaryIO | typing.IO[bytes]}
+    \item \texttt{model}: \texttt{torch.nn.Module}
+    \item \texttt{optimizer}: \texttt{torch.optim.Optimizer}
+\end{itemize}
+
+\textbf{Deliverable}: Implement the \lstinline{[adapters.run_save_checkpoint]} and \lstinline{[adapters.run_load_checkpoint]} adapters, and make sure they pass \lstinline{uv run pytest -k test_checkpointing}.
+
+\begin{answer}
+Code is available at \url{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/checkpoint.py}. P.S. I also consider there might be \lstinline{list} of optimizers(when implement the muon optimizer).
+\end{answer}
+
+\begin{lstlisting}
+(cs336-basics) [root:assignment1-basics]$ uv run pytest -k test_checkpointing
+======================== test session starts =========================
+platform linux -- Python 3.13.7, pytest-8.4.1, pluggy-1.6.0
+rootdir: standford-cs336/assignment1-basics
+configfile: pyproject.toml
+plugins: jaxtyping-0.3.2, hydra-core-1.3.2
+collected 48 items / 47 deselected / 1 selected                      
+
+tests/test_serialization.py::test_checkpointing PASSED
+
+================== 1 passed, 47 deselected in 4.43s ==================
+\end{lstlisting}
+
+\problem{training\_together}{Put it together (4 points)}
+
+\textbf{Deliverable}: Write a script that runs a training loop to train your model on user-provided input. In particular, we recommend that your training script allow for (at least) the following:
+
+\begin{itemize}
+    \item Ability to configure and control the various model and optimizer hyperparameters.
+    \item Memory-efficient loading of training and validation large datasets with \lstinline{np.memmap}.
+    \item Serializing checkpoints to a user-provided path.
+    \item Periodically logging training and validation performance (e.g., to console and/or an external service like Weights and Biases).
+\end{itemize}
+
+\begin{answer}
+I implemented two complete training scripts: \lstinline{train.py} and \lstinline{train_muon.py}, both integrating Hydra for configuration management and Weights \& Biases for experiment tracking.
+
+\begin{itemize}
+    \item \textbf{\lstinline{train.py}}: Standard training loop with AdamW optimizer, cosine learning rate scheduling with warmup, and gradient clipping, memory-efficient data loading, model checkpointing, and evaluation on validation set.
+    \item \textbf{\lstinline{train_muon.py}}: Extended version supporting the Muon optimizer for comparison studies
+\end{itemize}
+
+The scripts include comprehensive evaluation loops, proper device handling (CPU/GPU), and robust error handling. Differences between the two scripts can be viewed with \lstinline{diff -u train.py train_muon.py}.
+
+Code is available at:
+
+- \url{https://github.com/donglinkang2021/assignment1-basics/blob/main/train.py}
+
+- \url{https://github.com/donglinkang2021/assignment1-basics/blob/main/train_muon.py}
+\end{answer}
