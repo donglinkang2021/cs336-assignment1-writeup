@@ -1,0 +1,17 @@
+\section{Generating Text}
+
+\problem{decoding}{Decoding (3 points)}
+
+\textbf{Deliverable}: Implement a function to decode from your language model. We recommend that you support the following features:
+
+\begin{itemize}
+    \item Generate completions for a user-provided prompt (i.e., take in some $x_1...t$ and sample a completion until you hit an \lstinline{<|endoftext|>} token).
+    \item Allow the user to control the maximum number of generated tokens.
+    \item Given a desired temperature value, apply softmax temperature scaling to the predicted next-word distributions before sampling.
+    \item Top-$p$ sampling (\citet{holtzman2019curious}; also referred to as nucleus sampling), given a user-specified threshold value.
+\end{itemize}
+
+\begin{answer}
+I implemented a comprehensive text generation function supporting temperature scaling, top-$p$ sampling, prompt completion, and maximum length control. Additionally, I implemented KV-cache optimization inspired by \href{https://github.com/karpathy/nano-llama31/blob/master/llama31.py}{karpathy/nano-llama31} to significantly speed up autoregressive generation by caching attention key-value pairs from previous tokens. 
+Code is available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/generate.py}{generate.py}.
+\end{answer}
