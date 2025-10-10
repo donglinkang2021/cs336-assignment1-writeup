@@ -1,8 +1,10 @@
 % filepath: c:\Users\dongl\Desktop\cs336-assignment1-writeup\sections\appendix.tex
-\section{Parameter Calculation Verification}
-\label{sec:param-verification}
+\section{Appendix}
 
-To verify that our parameter calculation formula is correct, we provide the following verification code that compares the actual parameter count from a PyTorch model with our analytical formula:
+\subsection{Parameter Calculation Verification}
+\label{appendix:param-verification}
+
+To verify that our parameter calculation formula is correct, we provide the following verification code that compares the actual parameter count from a PyTorch model (implemented in \texttt{cs336\_basics/model.py}) with our analytical formula:
 
 \begin{lstlisting}[language=Python, caption={Parameter count verification code}]
 from cs336_basics.model import TransformerLM
@@ -42,9 +44,167 @@ def compute_model_size_from_scratch(
 
 print(f"Total number of parameters: {total_params}")     
 print("Computed model size from scratch:", compute_model_size_from_scratch(**model_cfg))
+\end{lstlisting}
 
-"""output
+\begin{lstlisting}
 Total number of parameters: 22696448
 Computed model size from scratch: 22696448
-"""
+\end{lstlisting}
+
+\subsection{Memory Calculation Verification}
+\label{appendix:memory-verification}
+
+\begin{lstlisting}
+def compute_model_size(
+    vocab_size: int,
+    context_length: int,
+    d_model: int,
+    num_layers: int,
+    num_heads: int,
+    d_ff: int,
+    **kwargs
+):
+    total_params = 0
+    total_params += vocab_size * d_model  # token embedding
+    total_params += num_layers * ( # per block
+        4 * (d_model * d_model) +  # Q, K, V, O projections
+        3 * (d_model * d_ff) +     # SwiGLU layers
+        2 * (d_model)              # RMSNorm layers
+    )
+    total_params += d_model  # final RMSNorm
+    total_params += d_model * vocab_size  # output projection
+    return total_params
+
+def compute_memory(vocab_size: int,
+    context_length: int,
+    d_model: int,
+    num_layers: int,
+    num_heads: int,
+    d_ff: int,
+    batch_size: int,
+    **kwargs
+) -> float:
+    param_size = compute_model_size(vocab_size, context_length, d_model, num_layers, num_heads, d_ff)
+    optimizer_size = param_size * 3  # Adam optimizer
+    activation_size = batch_size * context_length *(
+        num_layers * (
+            8 * d_model + 2 * d_ff + 2 * num_heads * context_length
+        ) + d_model + 2 * vocab_size  
+    )
+    memory_bytes = (param_size + optimizer_size + activation_size) * 4  # assuming 4 bytes per parameter (float32)
+    return memory_bytes / (1024 ** 3)  # convert to GB
+
+
+if __name__ == "__main__":
+    # GPT-2 XL
+    cfg = dict(
+        vocab_size=50257,
+        context_length=1024,
+        d_model=1600,
+        num_layers=48,
+        num_heads=25,
+        d_ff=6400, 
+        rope_theta=10000,
+        batch_size=3.34,
+    )
+    model_size = compute_model_size(**cfg)
+    memory_gb = compute_memory(**cfg)
+    print(f"Model size: {model_size/(1e9):.2f}B parameters")
+    print(f"Estimated memory usage during training: {memory_gb:.2f} GB")
+\end{lstlisting}
+
+\begin{lstlisting}
+Model size: 2.13B parameters
+Estimated memory usage during training: 79.97 GB
+\end{lstlisting}
+
+\subsection{GPT-2 FLOP Breakdown Code}
+\label{appendix:gpt2-flop-breakdown}
+
+To verify our FLOP breakdown for GPT-2 models, we provide the following code that computes the FLOP counts for attention, feed-forward, and language modeling head components based on the GPT-2 architecture:
+
+\begin{lstlisting}
+def compute_gpt2_flops(d_model:int, n_layer:int, T:int=1024) -> dict:
+    d_ff = 4 * d_model
+    vocab_size = 50_257
+    attn_flops = 4 * 2 * T * d_model * d_model + 2 * 2 * T * T * d_model
+    ff_flops = 3 * 2 * T * d_model * d_ff
+    lm_head_flops = 2 * T * d_model * vocab_size
+    total_flops = n_layer * (attn_flops + ff_flops) + lm_head_flops
+    return {
+        "attention": n_layer * attn_flops / total_flops,
+        "feed-forward": n_layer * ff_flops / total_flops,
+        "lm-head": lm_head_flops / total_flops,
+        "total": total_flops / 1e12, # in TFLOPs
+    }, {
+        "attention": n_layer * attn_flops / 1e12,
+        "feed-forward": n_layer * ff_flops / 1e12,
+        "lm-head": lm_head_flops / 1e12,
+        "total": total_flops / 1e12,
+    }
+
+print("GPT-2 small", compute_gpt2_flops(768, 12))
+print("GPT-2 medium", compute_gpt2_flops(1024, 24))
+print("GPT-2 large", compute_gpt2_flops(1280, 36))
+print("GPT-2 XL", compute_gpt2_flops(1600, 48))
+print("GPT-2 XL", compute_gpt2_flops(1600, 48, 16384))
+\end{lstlisting}
+
+\begin{lstlisting}
+GPT-2 small ({'attention': 0.276396942718713, 'feed-forward': 0.49751449689368343, 'lm-head': 0.22608856038760353, 'total': 0.349630365696}, {'attention': 0.09663676416, 'feed-forward': 0.173946175488, 'lm-head': 0.079047426048, 'total': 0.349630365696})
+GPT-2 medium ({'attention': 0.29932707434661254, 'feed-forward': 0.5986541486932251, 'lm-head': 0.1020187769601624, 'total': 1.033109504}, {'attention': 0.309237645312, 'feed-forward': 0.618475290624, 'lm-head': 0.105396568064, 'total': 1.033109504})
+GPT-2 large ({'attention': 0.2996151010432329, 'feed-forward': 0.6420323593783562, 'lm-head': 0.05835253957841083, 'total': 2.2577545216}, {'attention': 0.67645734912, 'feed-forward': 1.4495514624, 'lm-head': 0.13174571008, 'total': 2.2577545216})
+GPT-2 XL ({'attention': 0.29440647731422626, 'feed-forward': 0.6691056302596051, 'lm-head': 0.036487892426168594, 'total': 4.5133365248}, {'attention': 1.3287555072, 'feed-forward': 3.01989888, 'lm-head': 0.1646821376, 'total': 4.5133365248})    
+GPT-2 XL ({'attention': 0.65922723665908, 'feed-forward': 0.32315060620543135, 'lm-head': 0.017622157135488675, 'total': 149.5227957248}, {'attention': 98.5694994432, 'feed-forward': 48.31838208, 'lm-head': 2.6349142016, 'total': 149.5227957248})
+\end{lstlisting}
+
+\subsection{Comparison of GPT-2 Parameter Counts with original paper}
+\label{appendix:gpt2-param-comparison}
+
+To verify our GPT-2 parameter count calculations, we provide the following comparison with the original GPT-2 paper~\cite{radford2019language}:
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{c|c|c|c|c}
+        \toprule
+        Model & Our Calculation & Paper Reported & Difference & Relative Error \\
+        \midrule
+        GPT-2 Small & 162M & 117M & +45M & 38.46\% \\
+        GPT-2 Medium & 405M & 345M & +60M & 17.39\% \\
+        GPT-2 Large & 837M & 762M & +75M & 9.84\% \\
+        GPT-2 XL & 1636M & 1542M & +94M & 6.10\% \\
+        \bottomrule
+    \end{tabular}
+    \caption{Comparison of our GPT-2 parameter count calculations with values reported in the original GPT-2 paper~\cite{radford2019language}.}
+    \label{tab:gpt2-param-comparison}
+\end{table}
+
+\begin{lstlisting}
+def compute_gpt2_params(d_model:int, num_layers:int) -> float:
+    vocab_size = 50_257
+    d_ff = 4 * d_model
+    total_params = 0
+    total_params += vocab_size * d_model  # token embedding
+    total_params += num_layers * ( # per block
+        4 * (d_model * d_model) +  # Q, K, V, O projections
+        # 3 * (d_model * d_ff) +     # our SwiGLU layers
+        2 * (d_model * d_ff) +     # original gpt-2 layers
+        2 * (d_model)              # RMSNorm layers
+    )
+    total_params += d_model  # final RMSNorm
+    total_params += d_model * vocab_size  # output projection
+    return total_params
+
+
+print("GPT-2 small", compute_gpt2_params(768, 12) / 1e6, "M params")
+print("GPT-2 medium", compute_gpt2_params(1024, 24) / 1e6, "M params")
+print("GPT-2 large", compute_gpt2_params(1280, 36) / 1e6, "M params")
+print("GPT-2 XL", compute_gpt2_params(1600, 48) / 1e9, "B params")
+\end{lstlisting}
+
+\begin{lstlisting}
+GPT-2 small 162.148608 M params
+GPT-2 medium 404.9664 M params
+GPT-2 large 836.54016 M params
+GPT-2 XL 1.6355376 B params
 \end{lstlisting}

@@ -112,7 +112,7 @@ Let us compute how much memory and compute running AdamW requires. Assume we are
     \textbf{Deliverable}: An algebraic expression for each of parameters, activations, gradients, and optimizer state, as well as the total.
 
     \begin{answer}
-    \textbf{Parameters}: (See Appendix~\ref{sec:param-verification} for verification of this formula)
+    \textbf{Parameters}: (See \ref{appendix:param-verification} for verification of this formula)
     \begin{equation*}
         P = \mathop{V \cdot d}_{\text{embed}} + 
         L \cdot (
@@ -150,7 +150,7 @@ Let us compute how much memory and compute running AdamW requires. Assume we are
 
     \textbf{Total Memory}: $M = P + G + O + A = 4P + A$
 
-    (where $V$ = \lstinline{vocab_size}, $d$ = \lstinline{d_model}, $L$ = \lstinline{num_layers}, $T$ = \lstinline{context_length}, $H$ = \lstinline{num_heads}, $B$ = \lstinline{batch_size}, $d_{ff} = 4d$, and $d_v = d / H$)
+    (where $V$ = \lstinline{vocab_size}, $d$ = \lstinline{d_model}, $L$ = \lstinline{num_layers}, $T$ = \lstinline{context_length}, $H$ = \lstinline{num_heads}, $B$ = \lstinline{batch_size}, $d_{\text{ff}} = 4d$, and $d_v = d / H$)
     \end{answer}
 
     \item Instantiate your answer for a GPT-2 XL-shaped model to get an expression that only depends on the \lstinline{batch_size}. What is the maximum batch size you can use and still fit within 80 GB memory?
@@ -160,13 +160,14 @@ Let us compute how much memory and compute running AdamW requires. Assume we are
     \begin{answer}
     For GPT-2 XL: $V = 50257$, $d = 1600$, $L = 48$, $T = 1024$, $H = 25$
 
-    Parameters: $P = 16 \times 48 \times 1600^2 + (2 \times 48 + 1 + 2 \times 50257) \times 1600 \approx 1.98\text{B parameters}$
+    Parameters: $P = 16 \times 48 \times 1600^2 + (2 \times 48 + 1 + 2 \times 50257) \times 1600 \approx 2.13\text{B parameters}$
 
     Memory expression: $M = 4P \times 4 + B \times 1024 \times (48 \times (16 \times 1600 + 2 \times 25 \times 1024) + 1600 + 2 \times 50257) \times 4$
 
     $M = 31.71\text{GB} + B \times 14.45\text{GB}$
 
     Maximum batch size: $\frac{80 - 31.71}{14.45} \approx 3.34$
+    (See \ref{appendix:memory-verification} for calculation code)
     \end{answer}
 
     \item How many FLOPs does running one step of AdamW take?
@@ -174,22 +175,77 @@ Let us compute how much memory and compute running AdamW requires. Assume we are
     \textbf{Deliverable}: An algebraic expression, with a brief justification.
 
     \begin{answer}
-    % AdamW requires approximately $6P$ FLOPs per step, where $P$ is the number of parameters. This includes: momentum updates (2P), variance updates (3P), and parameter updates (1P). The dominant operations are element-wise multiplications and additions across all parameters.
+    AdamW requires approximately $16P$ FLOPs per step. The detailed breakdown is shown in Table~\ref{tab:adamw-flops}.
+    
+    \textbf{Assumptions:}
+
+    a. We count only the optimizer work (gradient computation via forward+backward is not included)
+    
+    b. Scalar constants are precomputed once per step (e.g., $\alpha\lambda$, $(1-\beta_1^t)^{-1}$, $(1-\beta_2^t)^{-1}$)
+    
+    c. Each multiply/add/subtract/divide/sqrt operation counts as 1 FLOP
+    
+    d. $P$ is the total number of model parameters
     \end{answer}
 
-    \item Model FLOPs utilization (MFU) is defined as the ratio of observed throughput (tokens per second) relative to the hardware's theoretical peak FLOP throughput. An NVIDIA A100 GPU has a theoretical peak of 19.5 teraFLOP/s for float32 operations. Assuming you are able to get 50\% MFU, how long would it take to train a GPT-2 XL for 400K steps and a batch size of 1024 on a single A100? Following Kaplan et al. [2020] and Hoffmann et al. [2022], assume that the backward pass has twice the FLOPs of the forward pass.
+    \begin{table}[h]
+    \centering
+    \caption{FLOP breakdown for AdamW optimizer per training step}
+    \label{tab:adamw-flops}
+    \scalebox{1}{
+    \begin{tabular}{|l|l|c|l|}
+    \hline
+    \textbf{Operation} & \textbf{Mathematical Formula} & \textbf{FLOPs/P} & \textbf{Description} \\
+    \hline
+    Weight decay & $\theta \leftarrow \theta - \alpha\lambda\theta$ & 2 & 1 mul + 1 sub \\
+    \hline
+    First moment & $m_t = \beta_1 m_{t-1} + (1-\beta_1) g_t$ & 3 & 2 mul + 1 add \\
+    \hline
+    Gradient square & $g_t^2$ & 1 & 1 mul \\
+    \hline
+    Second moment & $v_t = \beta_2 v_{t-1} + (1-\beta_2) g_t^2$ & 3 & 2 mul + 1 add \\
+    \hline
+    Bias correction (m) & $\hat{m}_t = m_t/(1-\beta_1^t)$ & 1 & 1 mul \\
+    \hline
+    Bias correction (v) & $\hat{v}_t = v_t/(1-\beta_2^t)$ & 1 & 1 mul \\
+    \hline
+    Square root & $\sqrt{\hat{v}_t}$ & 1 & 1 sqrt \\
+    \hline
+    Add epsilon & $\sqrt{\hat{v}_t} + \epsilon$ & 1 & 1 add \\
+    \hline
+    Division & $\hat{m}_t/(\sqrt{\hat{v}_t} + \epsilon)$ & 1 & 1 div \\
+    \hline
+    Scale by lr & $\alpha \cdot \hat{m}_t/(\sqrt{\hat{v}_t} + \epsilon)$ & 1 & 1 mul \\
+    \hline
+    Parameter update & $\theta \leftarrow \theta - \alpha \hat{m}_t/(\sqrt{\hat{v}_t} + \epsilon)$ & 1 & 1 sub \\
+    \hline
+    \multicolumn{3}{|r|}{\textbf{Total per parameter:}} & \textbf{16 FLOPs} \\
+    \hline
+    \multicolumn{3}{|r|}{\textbf{Total for model:}} & \textbf{16P FLOPs} \\
+    \hline
+    \end{tabular}
+    }
+    \end{table}
+
+    \item Model FLOPs utilization (MFU) is defined as the ratio of observed throughput (tokens per second) relative to the hardware's theoretical peak FLOP throughput \citet{chowdhery2023palm}. An NVIDIA A100 GPU has a theoretical peak of 19.5 teraFLOP/s for float32 operations. Assuming you are able to get 50\% MFU, how long would it take to train a GPT-2 XL for 400K steps and a batch size of 1024 on a single A100? Following \citet{kaplan2020scaling} and \citet{hoffmann2022training}, assume that the backward pass has twice the FLOPs of the forward pass.
 
     \textbf{Deliverable}: The number of days training would take, with a brief justification.
 
     \begin{answer}
-    % Forward pass: 4.51T FLOPs, Backward pass: 9.02T FLOPs, Total per step: 13.53T FLOPs
+    \textbf{Assumptions: use our previous defined parameters for our N=2.13B GPT-2 XL:}
+    
+    Forward FLOPs per token: 4.51T FLOPs/1024 tokens = 4.404B FLOPs/token (approximately $2N$), 
 
-    % With 50\% MFU on A100: $19.5 \times 0.5 = 9.75$ teraFLOP/s effective throughput
+    Backward FLOPs per token: $2 \times$ 4.404B = 8.808B FLOPs/token (approximately $4N$),
 
-    % Time per step: $\frac{13.53}{9.75} = 1.39$ seconds
+    Total FLOPs per token: 13.212B FLOPs/token (approximately $6N$)
 
-    % Total training time: $400,000 \times 1.39 = 556,000$ seconds $\approx 154$ hours $\approx 6.4$ days
+    Total tokens: $D = 400,000 \times 1024 \times 1024 = 419,430,400,000$ tokens
 
-    % This assumes perfect scaling and no overhead from data loading, checkpointing, or other operations.
+    Total training FLOPs budget: $13.212B * 419.43B \approx 5.54 \times 10^{21}$ FLOPs (approximately $6ND$)
+
+    With 50\% MFU on A100: $19.5 \times 0.5 = 9.75$ teraFLOP/s effective throughput
+
+    Time required: $(5.54 \times 10^{21}) / (9.75 \times 10^{12}) \approx 5.68 \times 10^{8}$ seconds $\approx 157778$ hours  $\approx 6574$ days $\approx 18$ years
     \end{answer}
 \end{enumerate}

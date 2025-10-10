@@ -687,7 +687,7 @@ class TransformerLM(nn.Module):
     \textbf{Deliverable}: A one-to-two sentence response.
     
     \begin{answer}
-    Our GPT-2 XL model would have approximately 1.98 billion trainable parameters 
+    Our GPT-2 XL model would have approximately 2.13 billion trainable parameters 
     
     \begin{equation*}
     \begin{aligned}
@@ -776,7 +776,7 @@ class TransformerLM(nn.Module):
     
     \begin{answer}
     GPT-2 model configurations and FLOP breakdown are shown in Table~\ref{tab:gpt2-comparison}. 
-    As model size increases, the feed-forward networks consume a larger proportion of FLOPs while embedding operations become negligible, with attention maintaining roughly constant proportional cost across all model sizes.
+    As model size increases, the feed-forward networks consume a larger proportion of FLOPs while embedding operations become negligible, with attention maintaining roughly constant proportional cost across all model sizes. (See \ref{appendix:gpt2-flop-breakdown} for calculation code)
     \end{answer}
     
     \begin{table}[h]
