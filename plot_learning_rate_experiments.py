@@ -51,7 +51,7 @@ def extract_lr_from_column(col_name):
         return lr_part
     return None
 
-def plot_learning_rate_schedule():
+def plot_learning_rate_exps():
     """Plot three subplots: training loss, learning rate schedule, and validation loss"""
     # Read all data
     train_loss_df = pd.read_csv('exps/learning_rate/ts-train-loss.csv')
@@ -98,7 +98,10 @@ def plot_learning_rate_schedule():
             continue
         
         # Plot training loss
-        line = ax1.plot(loss_steps, loss_data, color=color, linewidth=2, alpha=0.8)
+        if lr_val == 0.01:  # Highlight high LR case
+            line = ax1.plot(loss_steps, loss_data, color=color, linewidth=2.1, alpha=1,  zorder=10)
+        else:
+            line = ax1.plot(loss_steps, loss_data, color=color, linewidth=2, alpha=0.8)
         
         # Add to legend (only once)
         if len([l for l in legend_labels if lr_str in l]) == 0:
@@ -131,11 +134,14 @@ def plot_learning_rate_schedule():
         
         if len(lr_data) < 10:
             continue
-            
-        ax2.plot(lr_steps, lr_data, color=color, linewidth=2, alpha=0.8)
+
+        if lr_val == 0.01:  # Highlight high LR case
+            ax2.plot(lr_steps, lr_data, color=color, linewidth=2.1, alpha=1, zorder=10)
+        else:    
+            ax2.plot(lr_steps, lr_data, color=color, linewidth=2, alpha=0.8)
     
     ax2.set_xlabel('Training Step')
-    ax2.set_title('Learning Rate Schedule')
+    ax2.set_title('Learning Rate')
     ax2.grid(True, alpha=0.3)
     ax2.set_yscale('log')
     
@@ -167,8 +173,11 @@ def plot_learning_rate_schedule():
         if val_loss.min() > 8:
             continue
         
-        ax3.plot(times, val_loss, 'o-', color=color, 
-                linewidth=2, markersize=4, alpha=0.8)
+        # ax3.plot(times, val_loss, 'o-', color=color, linewidth=2, markersize=4, alpha=0.8)
+        if lr_val == 0.01:  # Highlight high LR case
+            line = ax3.plot(times, val_loss, 'o-', color=color, linewidth=2.1, markersize=4, alpha=1, zorder=10)
+        else:
+            line = ax3.plot(times, val_loss, 'o-', color=color, linewidth=2, markersize=4, alpha=0.8)
     
     ax3.set_xlabel('Relative Time (min)')
     ax3.set_title('Validation Loss')
@@ -180,13 +189,13 @@ def plot_learning_rate_schedule():
               fontsize=10, frameon=False)
     
     # Adjust layout to make room for legend at bottom
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0.05, 1, 1])
     plt.subplots_adjust(bottom=0.15)
     
     # Save the figure
-    plt.savefig('images/learning_rate_schedule.pdf', bbox_inches='tight', dpi=300)
+    plt.savefig('images/learning_rate_experiments.pdf', bbox_inches='tight', dpi=300)
     plt.close()
-    print("Generated: images/learning_rate_schedule.pdf")
+    print("Generated: images/learning_rate_experiments.pdf")
 
 def main():
     """Main function to generate all plots"""
@@ -196,10 +205,10 @@ def main():
     print("Generating learning rate experiment plots...")
     
     # Generate all plots including the new combined one
-    plot_learning_rate_schedule()
+    plot_learning_rate_exps()
     
     print("Files created:")
-    print("- images/learning_rate_schedule.pdf")
+    print("- images/learning_rate_experiments.pdf")
 
 if __name__ == "__main__":
     main()
