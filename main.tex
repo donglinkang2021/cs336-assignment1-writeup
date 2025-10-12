@@ -7,6 +7,7 @@
 \usepackage{amsfonts}   % Math font support
 \usepackage{amsthm}     % Theorem environment support
 \usepackage{booktabs}   % Table formatting support
+\usepackage{subcaption}
 \newtheorem{lemma}{Lemma}
 \newtheorem{theorem}{Theorem}
 \newtheorem{definition}{Definition}
@@ -43,15 +44,17 @@
 
 \lstset{style=pythonstyle} % Set the default style for listings
 
-% Define answer environment
-\newtcolorbox{answer}{
-    colback=blue!5!white,
-    colframe=blue!75!black,
-    title=Answer,
-    fonttitle=\bfseries,
-    left=2mm,
-    right=2mm,
-    boxsep=1mm
+\newenvironment{answer}{%
+    \par\vspace{0.5em}%
+    \noindent\textcolor{blue!75!black}{\textbf{Answer:}}%
+    \par\vspace{0.2em}%
+    \leftskip=1em%
+    \rightskip=1em%
+    \begin{quote}%
+    \color{blue!20!black}%
+}{%
+    \end{quote}%
+    \par\vspace{0.5em}%
 }
 
 \newtcolorbox{note}{
@@ -63,6 +66,10 @@
     right=2mm,
     boxsep=1mm
 }
+
+% Adjust spacing around figures and captions
+\setlength{\abovecaptionskip}{0pt}   % default 10pt
+\setlength{\belowcaptionskip}{0pt}   % default 0pt
 
 % Define problem counter and environment
 \newcounter{problem}
