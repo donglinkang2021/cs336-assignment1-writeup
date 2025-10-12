@@ -46,17 +46,20 @@ colors = {
 
 def extract_lr_from_column(col_name):
     """Extract learning rate value from column name"""
-    if 'ts-lr' in col_name:
-        lr_part = col_name.split('ts-lr')[1].split(' -')[0]
+    if 'owt-lr' in col_name or 'ts-lr' in col_name:
+        if 'owt-lr' in col_name:
+            lr_part = col_name.split('owt-lr')[1].split(' -')[0]
+        elif 'ts-lr' in col_name:
+            lr_part = col_name.split('ts-lr')[1].split(' -')[0]
         return lr_part
     return None
 
-def plot_learning_rate_exps():
+def plot_learning_rate_exps(train_loss_file, train_lr_file, val_loss_file, output_file):
     """Plot three subplots: training loss, learning rate schedule, and validation loss"""
     # Read all data
-    train_loss_df = pd.read_csv('exps/learning_rate/ts-train-loss.csv')
-    train_lr_df = pd.read_csv('exps/learning_rate/ts-train-lr.csv')
-    val_loss_df = pd.read_csv('exps/learning_rate/ts-val-loss.csv')
+    train_loss_df = pd.read_csv(train_loss_file)
+    train_lr_df = pd.read_csv(train_lr_file)
+    val_loss_df = pd.read_csv(val_loss_file)
     
     # Create figure with three subplots
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(12, 4))
@@ -111,7 +114,6 @@ def plot_learning_rate_exps():
     ax1.set_xlabel('Training Step')
     ax1.set_title('Training Loss')
     ax1.grid(True, alpha=0.3)
-    ax1.set_ylim(0, 10)
     
     # --- MIDDLE SUBPLOT: Learning Rate Schedule ---
     for lr_val, _ in lr_values:
@@ -173,7 +175,6 @@ def plot_learning_rate_exps():
         if val_loss.min() > 8:
             continue
         
-        # ax3.plot(times, val_loss, 'o-', color=color, linewidth=2, markersize=4, alpha=0.8)
         if lr_val == 0.01:  # Highlight high LR case
             line = ax3.plot(times, val_loss, 'o-', color=color, linewidth=2.1, markersize=4, alpha=1, zorder=10)
         else:
@@ -193,9 +194,9 @@ def plot_learning_rate_exps():
     plt.subplots_adjust(bottom=0.15)
     
     # Save the figure
-    plt.savefig('images/learning_rate_experiments.pdf', bbox_inches='tight', dpi=300)
+    plt.savefig(output_file, bbox_inches='tight', dpi=300)
     plt.close()
-    print("Generated: images/learning_rate_experiments.pdf")
+    print(f"Generated: {output_file}")
 
 def main():
     """Main function to generate all plots"""
@@ -204,11 +205,25 @@ def main():
     
     print("Generating learning rate experiment plots...")
     
-    # Generate all plots including the new combined one
-    plot_learning_rate_exps()
+    # Generate TS plots
+    plot_learning_rate_exps(
+        train_loss_file='exps/learning_rate/ts-train-loss.csv',
+        train_lr_file='exps/learning_rate/ts-train-lr.csv',
+        val_loss_file='exps/learning_rate/ts-val-loss.csv',
+        output_file='images/ts_learning_rate_experiments.pdf'
+    )
+    
+    # Generate OWT plots
+    plot_learning_rate_exps(
+        train_loss_file='exps/learning_rate/owt-train-loss.csv',
+        train_lr_file='exps/learning_rate/owt-train-lr.csv',
+        val_loss_file='exps/learning_rate/owt-val-loss.csv',
+        output_file='images/owt_learning_rate_experiments.pdf'
+    )
     
     print("Files created:")
-    print("- images/learning_rate_experiments.pdf")
+    print("- images/ts_learning_rate_experiments.pdf")
+    print("- images/owt_learning_rate_experiments.pdf")
 
 if __name__ == "__main__":
     main()
