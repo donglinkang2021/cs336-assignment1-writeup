@@ -165,18 +165,18 @@ To verify our GPT-2 parameter count calculations, we provide the following compa
 
 \begin{table}[h]
     \centering
+    \caption{Comparison of our GPT-2 calculations with values reported in the original GPT-2 paper~\cite{radford2019language}.}
+    \label{tab:gpt2-param-comparison}
     \begin{tabular}{c|c|c|c|c}
         \toprule
         Model & Our Calculation & Paper Reported & Difference & Relative Error \\
         \midrule
-        GPT-2 Small & 162M & 117M & +45M & 38.46\% \\
-        GPT-2 Medium & 405M & 345M & +60M & 17.39\% \\
-        GPT-2 Large & 837M & 762M & +75M & 9.84\% \\
-        GPT-2 XL & 1636M & 1542M & +94M & 6.10\% \\
+        GPT-2 Small & 124M & 117M & +7M & 5.98\% \\
+        GPT-2 Medium & 354M & 345M & +9M & 2.61\% \\
+        GPT-2 Large & 772M & 762M & +10M & 1.31\% \\
+        GPT-2 XL & 1555M & 1542M & +13M & 0.84\% \\
         \bottomrule
     \end{tabular}
-    \caption{Comparison of our GPT-2 parameter count calculations with values reported in the original GPT-2 paper~\cite{radford2019language}.}
-    \label{tab:gpt2-param-comparison}
 \end{table}
 
 \begin{lstlisting}
@@ -192,7 +192,7 @@ def compute_gpt2_params(d_model:int, num_layers:int) -> float:
         2 * (d_model)              # RMSNorm layers
     )
     total_params += d_model  # final RMSNorm
-    total_params += d_model * vocab_size  # output projection
+    # total_params += d_model * vocab_size  # output projection tied with input embedding
     return total_params
 
 
@@ -203,8 +203,8 @@ print("GPT-2 XL", compute_gpt2_params(1600, 48) / 1e9, "B params")
 \end{lstlisting}
 
 \begin{lstlisting}
-GPT-2 small 162.148608 M params
-GPT-2 medium 404.9664 M params
-GPT-2 large 836.54016 M params
-GPT-2 XL 1.6355376 B params
+GPT-2 small 123.551232 M params
+GPT-2 medium 353.503232 M params
+GPT-2 large 772.2112 M params
+GPT-2 XL 1.5551264 B params
 \end{lstlisting}
