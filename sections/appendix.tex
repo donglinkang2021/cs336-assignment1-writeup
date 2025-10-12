@@ -208,3 +208,63 @@ GPT-2 medium 353.503232 M params
 GPT-2 large 772.2112 M params
 GPT-2 XL 1.5551264 B params
 \end{lstlisting}
+
+\subsection{Comprehensive Logging Code Snippet}
+\label{appendix:logging-code}
+
+\begin{lstlisting}
+# Training script with comprehensive logging infrastructure
+import hydra
+from cs336_basics.logger import Logger
+from cs336_basics.config import TrainConfig
+
+@hydra.main(config_path="conf", config_name="train_config", version_base=None)
+def main(cfg: TrainConfig) -> None:
+    # Initialize logger with Hydra configuration
+    logger = Logger(cfg)
+    output_dir = Path(HydraConfig.get().runtime.output_dir)
+    
+    # ... model and data setup ...
+    
+    # Training loop with comprehensive logging
+    for it in tqdm(range(start_iter, cfg.training.max_iters), desc="Training"):
+        # ... forward/backward pass ...
+        
+        # Training metrics logging
+        if it % cfg.training.log_interval == 0:
+            ent = compute_entropy_chunked(logits).mean()
+            logger.log_metrics({
+                'train/loss': loss.item(), 
+                'train/ppl': loss.exp().item(),
+                'train/lr': lr,
+                'train/entropy': ent.item(),
+                'train/grad_norm': grad_norm
+            }, step=it)
+            
+        # Validation logging
+        if it % cfg.training.eval_interval == 0:
+            metrics = evaluate(model, val_data, cfg, device)
+            logger.log_metrics({
+                'val/loss': metrics['val/loss'],
+                'val/ppl': metrics['val/ppl'], 
+                'val/entropy': metrics['val/entropy']
+            }, step=it)
+    
+    # Log generated text samples
+    generated_output = generate_text(model, tokenizer, ...)
+    logger.log_text("Generated Text", generated_output, step=cfg.training.max_iters)
+    
+    logger.close()
+    # Save final configuration
+    OmegaConf.save(cfg, output_dir / 'config.yaml')
+
+@torch.no_grad()
+def evaluate(model, data, cfg, device):
+    """Evaluation with entropy and perplexity tracking."""
+    # ... evaluation loop ...
+    return {
+        'val/loss': mean_loss,
+        'val/ppl': np.exp(mean_loss),
+        'val/entropy': np.mean(entropies)
+    }
+\end{lstlisting}

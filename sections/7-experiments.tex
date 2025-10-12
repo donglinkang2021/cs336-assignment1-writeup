@@ -9,67 +9,9 @@ For your training and evaluation code, create experiment tracking infrastructure
 \begin{answer}
 I implemented comprehensive experiment tracking infrastructure using Weights \& Biases (wandb) integrated with Hydra for configuration management. The logging system tracks training and validation losses, learning rates, gradient norms, and wallclock time (recorded by wandb automatically) across all experiments.
 
-All experiment configurations and results are systematically logged and can be accessed through the wandb dashboard for analysis and comparison.
+All experiment configurations and results are systematically logged and can be accessed through the wandb dashboard for analysis and comparison. A comprehensive code snippet of the logging setup is provided in \ref{appendix:logging-code}. The whole training code is available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/train.py}{train.py}. And all the experiment scripts/logs can be found at \href{https://github.com/donglinkang2021/assignment1-basics/tree/main/scripts}{scripts} and \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/docs/CHANGELOG.md}{CHANGELOG.md}.
 
-Code is available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/train.py}{train.py}.
 \end{answer}
-
-\begin{lstlisting}
-# Training script with comprehensive logging infrastructure
-import hydra
-from cs336_basics.logger import Logger
-from cs336_basics.config import TrainConfig
-
-@hydra.main(config_path="conf", config_name="train_config", version_base=None)
-def main(cfg: TrainConfig) -> None:
-    # Initialize logger with Hydra configuration
-    logger = Logger(cfg)
-    output_dir = Path(HydraConfig.get().runtime.output_dir)
-    
-    # ... model and data setup ...
-    
-    # Training loop with comprehensive logging
-    for it in tqdm(range(start_iter, cfg.training.max_iters), desc="Training"):
-        # ... forward/backward pass ...
-        
-        # Training metrics logging
-        if it % cfg.training.log_interval == 0:
-            ent = compute_entropy_chunked(logits).mean()
-            logger.log_metrics({
-                'train/loss': loss.item(), 
-                'train/ppl': loss.exp().item(),
-                'train/lr': lr,
-                'train/entropy': ent.item(),
-                'train/grad_norm': grad_norm
-            }, step=it)
-            
-        # Validation logging
-        if it % cfg.training.eval_interval == 0:
-            metrics = evaluate(model, val_data, cfg, device)
-            logger.log_metrics({
-                'val/loss': metrics['val/loss'],
-                'val/ppl': metrics['val/ppl'], 
-                'val/entropy': metrics['val/entropy']
-            }, step=it)
-    
-    # Log generated text samples
-    generated_output = generate_text(model, tokenizer, ...)
-    logger.log_text("Generated Text", generated_output, step=cfg.training.max_iters)
-    
-    logger.close()
-    # Save final configuration
-    OmegaConf.save(cfg, output_dir / 'config.yaml')
-
-@torch.no_grad()
-def evaluate(model, data, cfg, device):
-    """Evaluation with entropy and perplexity tracking."""
-    # ... evaluation loop ...
-    return {
-        'val/loss': mean_loss,
-        'val/ppl': np.exp(mean_loss),
-        'val/entropy': np.mean(entropies)
-    }
-\end{lstlisting}
 
 \problem{learning\_rate}{Tune the learning rate (3 points) (4 H100 hrs)}
 
@@ -89,7 +31,7 @@ The learning rate is one of the most important hyperparameters to tune. Taking t
 
 \begin{answer}
 
-
+\textbf{Part (a):}
 I employed a logarithmic grid search across learning rates from $10^{-5}$ to $3 \times 10^{-2}$, testing nine values: [1e-5, 3e-5, 1e-4, 3e-4, 1e-3, 3e-3, 6e-3, 1e-2, 3e-2]. Each experiment used identical model architecture and training configuration with cosine learning rate scheduling, 500-step warmup, and AdamW optimizer ($\beta_1=0.9, \beta_2=0.95$, weight decay=0.01). Due to GPU memory constraints (48GB), TinyStories experiments used batch size 256 for 5,000 iterations, while OpenWebText experiments used batch size 128 for 10,000 iterations to maintain total 327,680,000 tokens processed (context length=256). The learning curves are shown in Figure \ref{fig:learning_rate_experiments}.
 
 \begin{figure}[h]
@@ -144,18 +86,25 @@ Vary your batch size all the way from 1 to the GPU memory limit. Try at least a 
 \textbf{Deliverable}: A few sentences discussing of your findings on batch sizes and their impacts on training.
 
 \begin{answer}
-% I conducted experiments with batch sizes ranging from 1 to 512 (GPU memory limit), testing values: [1, 8, 16, 32, 64, 128, 256, 512]. For each batch size, I applied the batch size scaling rule by adjusting the learning rate proportionally to maintain effective gradient updates.
+I conducted comprehensive batch size experiments on TinyStories, testing values from 1 to 1024: [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024]. All experiments used learning rate $1 \times 10^{-3}$ (selected for better balance of convergence speed and stability), training for 10,000 iterations with the same total token count of 327,680,000 to ensure fair comparison. The learning curves are shown in Figure \ref{fig:batch_size_experiments}.
 
-% \textbf{Key Findings:}
-% \begin{itemize}
-%     \item \textbf{Small batch sizes (1-8)}: Higher gradient noise led to more exploration but slower convergence and increased training time per epoch
-%     \item \textbf{Medium batch sizes (32-128)}: Optimal balance between gradient stability and computational efficiency, with batch size 64 showing best validation performance
-%     \item \textbf{Large batch sizes (256-512)}: Faster training per step but required careful learning rate tuning to avoid getting stuck in poor local minima
-% \end{itemize}
+Key Findings:
 
-% The experiments confirmed that moderate batch sizes provide the best trade-off between training stability, convergence speed, and final model performance. Very small batches introduced too much noise, while very large batches required more sophisticated optimization techniques to maintain training dynamics.
+- {Small (1-16)}: Exhibited high gradient noise, and increased wall-clock training time despite processing the same number of tokens
 
-% Experiment logs available on wandb: \url{https://wandb.ai/project/batch-size-experiments}
+- {Optimal (128)}: Achieved the lowest val/loss efficiently (8.75 minutes for 10k iterations)
+
+- {Near (32,64,256,512,768)}: Showed competitive performance, faster per-step computation(256-768)
+
+- {Large (1024)}: Training collapsed, which exceeds memory capacity
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/batch_size_experiments.pdf}
+    \caption{Batch size experiments on TinyStories showing training loss vs. steps (left, log-log scale), validation loss vs. steps (middle, log-log scale), and GPU memory vs. time (right). Batch size 128 (orange line) achieved the best validation performance with only 8.75 minutes of training time for 10,000 iterations. Complete experiment logs are available on W\&B: \href{https://wandb.ai/donglinkang2021-beijing-institute-of-technology/cs336-assignment1-basics/reports/Batch-size-variations--VmlldzoxNDY5Mzc1OQ?accessToken=5hohvd95f5ejp1e2cn3wt8x2ysqrkgmou352yx2axyiu3ho2fibb3g1bugj39zdx}{Report}.}
+    \label{fig:batch_size_experiments}
+\end{figure}
+
 \end{answer}
 
 \problem{generate}{Generate text (1 point)}
