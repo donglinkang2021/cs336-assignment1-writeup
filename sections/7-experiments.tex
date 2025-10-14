@@ -143,14 +143,14 @@ Remove all of the RMSNorms from your Transformer and train. What happens at the 
 
 I conducted comprehensive experiments removing RMSNorm from the Transformer architecture across three different learning rates: $1 \times 10^{-2}$, $1 \times 10^{-3}$, and $3 \times 10^{-4}$. The results are shown in Figure \ref{fig:rmsnorm_ablation_experiments}.
 
-\begin{figure}[h]
+\textbf{Commentary:} RMSNorm is essential for training stability in Transformer architectures. Without it, training diverges catastrophically at the optimal learning rate ($1 \times 10^{-2}$), with losses exploding to over $10^{26}$ within hundreds of steps. While lower learning rates ($1 \times 10^{-3}$ and $3 \times 10^{-4}$) provide some stability, they converge to significantly worse solutions compared to models with RMSNorm. These results demonstrate that RMSNorm enables both efficient training with higher learning rates and better final model quality by maintaining well-conditioned gradients throughout training.
+
+\begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{images/rmsnorm_ablation_experiments.pdf}
     \caption{RMSNorm ablation experiments comparing baseline (with RMSNorm) vs. no RMSNorm across different learning rates. Top row shows training loss vs. steps, bottom row shows validation loss vs. relative time.}
     \label{fig:rmsnorm_ablation_experiments}
 \end{figure}
-
-\textbf{Commentary:} RMSNorm is essential for training stability in Transformer architectures. Without it, training diverges catastrophically at the optimal learning rate ($1 \times 10^{-2}$), with losses exploding to over $10^{26}$ within hundreds of steps. While lower learning rates ($1 \times 10^{-3}$ and $3 \times 10^{-4}$) provide some stability, they converge to significantly worse solutions compared to models with RMSNorm. These results demonstrate that RMSNorm enables both efficient training with higher learning rates and better final model quality by maintaining well-conditioned gradients throughout training.
 
 \end{answer}
 
@@ -161,7 +161,14 @@ Modify your pre-norm Transformer implementation into a post-norm one. Train with
 \textbf{Deliverable}: A learning curve for a post-norm transformer, compared to the pre-norm one.
 
 \begin{answer}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/prenorm_ablation_experiments.pdf}
+    \caption{Training and validation loss for pre-norm vs. post-norm Transformers at learning rates 0.01 and 0.001.}
+    \label{fig:prenorm_ablation}
+\end{figure}
 
+\textbf{Commentary:} The pre-norm transformer remained stable across both learning rates, whereas the post-norm variant using the optimal learning rate diverged quickly, showing that pre-norm is more stable than post-norm.
 \end{answer}
 
 \problem{no\_pos\_emb}{Implement NoPE (1 point) (1 H100 hr)}
