@@ -141,6 +141,17 @@ Remove all of the RMSNorms from your Transformer and train. What happens at the 
 
 \begin{answer}
 
+I conducted comprehensive experiments removing RMSNorm from the Transformer architecture across three different learning rates: $1 \times 10^{-2}$, $1 \times 10^{-3}$, and $3 \times 10^{-4}$. The results are shown in Figure \ref{fig:rmsnorm_ablation_experiments}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/rmsnorm_ablation_experiments.pdf}
+    \caption{RMSNorm ablation experiments comparing baseline (with RMSNorm) vs. no RMSNorm across different learning rates. Top row shows training loss vs. steps, bottom row shows validation loss vs. relative time.}
+    \label{fig:rmsnorm_ablation_experiments}
+\end{figure}
+
+\textbf{Commentary:} RMSNorm is essential for training stability in Transformer architectures. Without it, training diverges catastrophically at the optimal learning rate ($1 \times 10^{-2}$), with losses exploding to over $10^{26}$ within hundreds of steps. While lower learning rates ($1 \times 10^{-3}$ and $3 \times 10^{-4}$) provide some stability, they converge to significantly worse solutions compared to models with RMSNorm. These results demonstrate that RMSNorm enables both efficient training with higher learning rates and better final model quality by maintaining well-conditioned gradients throughout training.
+
 \end{answer}
 
 \problem{pre\_norm\_ablation}{Implement post-norm and train (1 point) (1 H100 hr)}
