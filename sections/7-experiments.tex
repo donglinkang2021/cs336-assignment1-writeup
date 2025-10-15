@@ -186,7 +186,7 @@ Modify your Transformer implementation with RoPE to remove the position embeddin
     \label{fig:rope_ablation}
 \end{figure}
 
-\textbf{Commentary:} RoPE maintained lower training and validation losses at every learning rate, while NoPE plateaued more quickly. This suggests that removing positional encodings limits convergence speed and final quality, even with conservative optimization settings. However, the stability of NoPE at optimal learning rate 0.01 indicates that positional encodings are not strictly necessary for training stability, but they do enhance performance.
+\textbf{Commentary:} RoPE maintained lower training and validation losses at every learning rate, while NoPE plateaued more quickly. This suggests that removing positional encodings limits convergence speed and final quality, even with conservative learning rate. However, the stability of NoPE at optimal learning rate 0.01 indicates that positional encodings are not strictly necessary for training stability, but they do enhance performance.
 
 \end{answer}
 
@@ -197,6 +197,15 @@ Modify your Transformer implementation with RoPE to remove the position embeddin
 \textbf{Deliverable}: A few sentences discussing your findings.
 
 \begin{answer}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/swiglu_ablation_experiments.pdf}
+    \caption{Training and validation loss for SwiGLU vs. SiLU across multiple learning rates.}
+    \label{fig:swiglu_ablation}
+\end{figure}
+
+SiLU edges out SwiGLU only at the optimal learning rate (0.01), delivering slightly lower losses. Across the stable learning-rate regime (0.001 and 0.0003), SwiGLU converges faster and finishes with better validation loss, indicating that the gating boost helps when optimization pressure is lower.
 
 \end{answer}
 
