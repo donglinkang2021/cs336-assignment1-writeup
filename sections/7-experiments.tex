@@ -164,7 +164,7 @@ Modify your pre-norm Transformer implementation into a post-norm one. Train with
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.6\textwidth]{images/prenorm_ablation_experiments.pdf}
-    \caption{Training and validation loss for pre-norm vs. post-norm at multiple learning rates.}
+    \caption{Training and validation loss for pre-norm vs. post-norm across multiple learning rates.}
     \label{fig:prenorm_ablation}
 \end{figure}
 
@@ -178,6 +178,15 @@ Modify your Transformer implementation with RoPE to remove the position embeddin
 \textbf{Deliverable}: A learning curve comparing the performance of RoPE and NoPE.
 
 \begin{answer}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/rope_ablation_experiments.pdf}
+    \caption{Training and validation loss for RoPE vs. NoPE across multiple learning rates.}
+    \label{fig:rope_ablation}
+\end{figure}
+
+\textbf{Commentary:} RoPE maintained lower training and validation losses at every learning rate, while NoPE plateaued more quickly. This suggests that removing positional encodings limits convergence speed and final quality, even with conservative optimization settings. However, the stability of NoPE at optimal learning rate 0.01 indicates that positional encodings are not strictly necessary for training stability, but they do enhance performance.
 
 \end{answer}
 
