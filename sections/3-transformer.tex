@@ -704,7 +704,7 @@ class TransformerLM(nn.Module):
     \textbf{Deliverable}: A list of matrix multiplies (with descriptions), and the total number of FLOPs required.
     
     \begin{answer}
-    Per layer matrix multiplies are listed in the following table \ref{tab:gpt2xl_flops}. 
+    Per layer matrix multiplies are listed in the following Table~\ref{tab:gpt2xl_flops}. 
     Total per layer: $90,596,966,400 \approx 90.6\text{B FLOPs}$, and for 48 layers: $4,348,654,387,200 \approx 4.35$ trillion FLOPs, and for final projection: $2 \times 1,024 \times 1,600 \times 50,257 = 165,566,873,600 \approx 165.57\text{B FLOPs}$, so the total is $4,514,221,260,800 \approx 4.51$ trillion FLOPs.
     \end{answer}
 
@@ -746,7 +746,7 @@ class TransformerLM(nn.Module):
     \textbf{Deliverable}: A one-to-two sentence response.
     
     \begin{answer}
-    From the table \ref{tab:gpt2xl_flops} above, we can just use one formula to calculate the total FLOPs:
+    From the table Table~\ref{tab:gpt2xl_flops} above, we can just use one formula to calculate the total FLOPs:
     \begin{equation*}
         \begin{aligned}
             \text{Total FLOPs} &= N_{\text{layer}} (
@@ -770,7 +770,7 @@ class TransformerLM(nn.Module):
     
     \begin{answer}
     GPT-2 model configurations and FLOP breakdown are shown in Table~\ref{tab:gpt2-comparison}. 
-    As model size increases, the feed-forward networks consume a larger proportion of FLOPs while embedding operations become negligible, with attention maintaining roughly constant proportional cost across all model sizes. (See \ref{appendix:gpt2-flop-breakdown} for calculation code)
+    As model size increases, the feed-forward networks consume a larger proportion of FLOPs while embedding operations become negligible, with attention maintaining roughly constant proportional cost across all model sizes. (See Appendix~\ref{appendix:gpt2-flop-breakdown} for calculation code)
     \end{answer}
     
     \begin{table}[h]

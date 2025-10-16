@@ -9,7 +9,7 @@ For your training and evaluation code, create experiment tracking infrastructure
 \begin{answer}
 I implemented comprehensive experiment tracking infrastructure using Weights \& Biases (wandb) integrated with Hydra for configuration management. The logging system tracks training and validation losses, learning rates, gradient norms, and wallclock time (recorded by wandb automatically) across all experiments.
 
-All experiment configurations and results are systematically logged and can be accessed through the wandb dashboard for analysis and comparison. A comprehensive code snippet of the logging setup is provided in \ref{appendix:logging-code}. The whole training code is available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/train.py}{train.py}. And all the experiment scripts/logs can be found at \href{https://github.com/donglinkang2021/assignment1-basics/tree/main/scripts}{scripts} and \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/docs/CHANGELOG.md}{CHANGELOG.md}.
+All experiment configurations and results are systematically logged and can be accessed through the wandb dashboard for analysis and comparison. A comprehensive code snippet of the logging setup is provided in Appendix~\ref{appendix:logging-code}. The whole training code is available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/train.py}{train.py}. And all the experiment scripts/logs can be found at \href{https://github.com/donglinkang2021/assignment1-basics/tree/main/scripts}{scripts} and \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/docs/CHANGELOG.md}{CHANGELOG.md}.
 
 \end{answer}
 
@@ -34,7 +34,7 @@ The learning rate is one of the most important hyperparameters to tune. Taking t
 \textbf{Part (a):}
 I employed a logarithmic grid search across learning rates from $10^{-5}$ to $3 \times 10^{-2}$, testing nine values: [1e-5, 3e-5, 1e-4, 3e-4, 1e-3, 3e-3, 6e-3, 1e-2, 3e-2]. Each experiment used identical model architecture and training configuration with cosine learning rate scheduling, 500-step warmup, and AdamW optimizer ($\beta_1=0.9, \beta_2=0.95$, weight decay=0.01). Due to GPU memory constraints (48GB), TinyStories experiments used batch size 256 for 5,000 iterations, while OpenWebText experiments used batch size 128 for 10,000 iterations to maintain total 327,680,000 tokens processed (context length=256). The learning curves are shown in Figure \ref{fig:learning_rate_experiments}.
 
-\begin{figure}[h]
+\begin{figure}[!htb]
     \centering
     \begin{subfigure}[t]{\textwidth}
         \centering
@@ -98,7 +98,7 @@ Key Findings:
 
 - {Large (1024)}: Training collapsed, which exceeds memory capacity
 
-\begin{figure}[h]
+\begin{figure}[!htb]
     \centering
     \includegraphics[width=\textwidth]{images/batch_size_experiments.pdf}
     \caption{Batch size experiments on TinyStories showing training loss vs. steps (left, log-log scale), validation loss vs. steps (middle, log-log scale), and GPU memory vs. time (right). Batch size 128 (orange line) achieved the best validation performance with only 8.75 minutes of training time for 10,000 iterations. Complete experiment logs are available on W\&B: \href{https://wandb.ai/donglinkang2021-beijing-institute-of-technology/cs336-assignment1-basics/reports/Batch-size-variations--VmlldzoxNDY5Mzc1OQ?accessToken=5hohvd95f5ejp1e2cn3wt8x2ysqrkgmou352yx2axyiu3ho2fibb3g1bugj39zdx}{Report}.}
@@ -141,11 +141,11 @@ Remove all of the RMSNorms from your Transformer and train. What happens at the 
 
 \begin{answer}
 
-I conducted comprehensive experiments removing RMSNorm from the Transformer architecture across three different learning rates: $1 \times 10^{-2}$, $1 \times 10^{-3}$, and $3 \times 10^{-4}$. The results are shown in Figure \ref{fig:rmsnorm_ablation_experiments}.
+I conducted comprehensive experiments removing RMSNorm from the Transformer architecture across three different learning rates: $1 \times 10^{-2}$, $1 \times 10^{-3}$, and $3 \times 10^{-4}$. The learning curves are shown in Figure~\ref{fig:rmsnorm_ablation_experiments}.
 
 \textbf{Commentary:} RMSNorm is essential for training stability in Transformer architectures. Without it, training diverges catastrophically at the optimal learning rate ($1 \times 10^{-2}$), with losses exploding to over $10^{26}$ within hundreds of steps. While lower learning rates ($1 \times 10^{-3}$ and $3 \times 10^{-4}$) provide some stability, they converge to significantly worse solutions compared to models with RMSNorm. These results demonstrate that RMSNorm enables both efficient training with higher learning rates and better final model quality by maintaining well-conditioned gradients throughout training.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
     \includegraphics[width=\textwidth]{images/rmsnorm_ablation_experiments.pdf}
     \caption{RMSNorm ablation experiments comparing baseline (with RMSNorm) vs. no RMSNorm across different learning rates. Top row shows training loss vs. steps, bottom row shows validation loss vs. relative time.}
@@ -161,7 +161,10 @@ Modify your pre-norm Transformer implementation into a post-norm one. Train with
 \textbf{Deliverable}: A learning curve for a post-norm transformer, compared to the pre-norm one.
 
 \begin{answer}
-\begin{figure}[h]
+
+The learning curves are shown in Figure~\ref{fig:prenorm_ablation}.
+
+\begin{figure}[!htb]
     \centering
     \includegraphics[width=0.6\textwidth]{images/prenorm_ablation_experiments.pdf}
     \caption{Training and validation loss for pre-norm vs. post-norm across multiple learning rates.}
@@ -179,7 +182,9 @@ Modify your Transformer implementation with RoPE to remove the position embeddin
 
 \begin{answer}
 
-\begin{figure}[h]
+The learning curves are shown in Figure~\ref{fig:rope_ablation}.
+
+\begin{figure}[!htb]
     \centering
     \includegraphics[width=0.6\textwidth]{images/rope_ablation_experiments.pdf}
     \caption{Training and validation loss for RoPE vs. NoPE across multiple learning rates.}
@@ -198,14 +203,16 @@ Modify your Transformer implementation with RoPE to remove the position embeddin
 
 \begin{answer}
 
-\begin{figure}[h]
+The learning curves are shown in Figure~\ref{fig:swiglu_ablation}.
+
+\begin{figure}[!htb]
     \centering
     \includegraphics[width=0.6\textwidth]{images/swiglu_ablation_experiments.pdf}
     \caption{Training and validation loss for SwiGLU vs. SiLU across multiple learning rates.}
     \label{fig:swiglu_ablation}
 \end{figure}
 
-SiLU edges out SwiGLU only at the optimal learning rate (0.01), delivering slightly lower losses. Across the stable learning-rate regime (0.001 and 0.0003), SwiGLU converges faster and finishes with better validation loss, indicating that the gating boost helps when optimization pressure is lower.
+\textbf{Commentary:} SiLU edges out SwiGLU only at the optimal learning rate (0.01), delivering slightly lower losses. Across the stable learning-rate regime (0.001 and 0.0003), SwiGLU converges faster and finishes with better validation loss, indicating that the gating boost helps when optimization pressure is lower.
 
 \end{answer}
 

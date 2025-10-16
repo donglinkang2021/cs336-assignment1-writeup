@@ -112,7 +112,7 @@ Let us compute how much memory and compute running AdamW requires. Assume we are
     \textbf{Deliverable}: An algebraic expression for each of parameters, activations, gradients, and optimizer state, as well as the total.
 
     \begin{answer}
-    \textbf{Parameters}: (See \ref{appendix:param-verification} for verification of this formula)
+    \textbf{Parameters}: (See Appendix~\ref{appendix:param-verification} for verification of this formula)
     \begin{equation*}
         P = \mathop{V \cdot d}_{\text{embed}} + 
         L \cdot (
@@ -167,7 +167,7 @@ Let us compute how much memory and compute running AdamW requires. Assume we are
     $M = 31.71\text{GB} + B \times 14.45\text{GB}$
 
     Maximum batch size: $\frac{80 - 31.71}{14.45} \approx 3.34$
-    (See \ref{appendix:memory-verification} for calculation code)
+    (See Appendix~\ref{appendix:memory-verification} for calculation code)
     \end{answer}
 
     \item How many FLOPs does running one step of AdamW take?
