@@ -80,7 +80,7 @@ tests/test_serialization.py::test_checkpointing PASSED
 I implemented two complete training scripts: \lstinline{train.py} and \lstinline{train_muon.py}, both integrating Hydra for configuration management and Weights \& Biases for experiment tracking.
 
 \begin{itemize}
-    \item \textbf{\lstinline{train.py}}: Standard training loop with AdamW optimizer, cosine learning rate scheduling with warmup, and gradient clipping, memory-efficient data loading, model checkpointing, and evaluation on validation set.
+    \item \textbf{\lstinline{train.py}}: Standard training loop with AdamW optimizer, cosine learning rate scheduling with warmup, and gradient clipping, memory-efficient data loading, model checkpointing, and evaluation.
     \item \textbf{\lstinline{train_muon.py}}: Extended version supporting the Muon optimizer for comparison studies
 \end{itemize}
 
