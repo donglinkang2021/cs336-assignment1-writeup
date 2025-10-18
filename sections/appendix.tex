@@ -268,3 +268,77 @@ def evaluate(model, data, cfg, device):
         'val/entropy': np.mean(entropies)
     }
 \end{lstlisting}
+
+\subsection{Analysis of the Error encodings 鈥檚}
+\label{appendix:error-encoding}
+
+To investigate the source of the garbled characters like \lstinline{鈥檚} in the generated text, I analyzed the raw training data (\lstinline{owt_train.txt}), the tokenizer's behavior, and the processed binary data (\lstinline{train.bin}). My goal was to understand the frequency and representation of different apostrophe styles.
+
+The Python snippet below confirms the root cause: the sequence \lstinline{鈥檚} is the result of incorrectly decoding a UTF-8 encoded string \lstinline{’s} (using a right single quotation mark) with a different encoding, such as GBK.
+
+\begin{lstlisting}
+>>> "NBA’s".encode("utf-8").decode("utf-8")
+'NBA’s'
+>>> "NBA’s".encode("utf-8").decode("gbk")
+'NBA鈥檚'
+\end{lstlisting}
+
+To quantify the presence of this error in the dataset, I ran scripts to count the occurrences of different \lstinline{'s} variants both in the raw text file and in the tokenized training data\footnote{The code for this analysis can be found in \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/data_utils/count_word_from_train_txt.sh}{\lstinline{count_word_from_train_txt.sh}} and \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/data_utils/count_word_from_train_bin.py}{\lstinline{count_word_from_train_bin.py}}.}.
+
+\begin{lstlisting}
+(cs336-basics) [root:assignment1-basics]$ python data_utils/count_word_from_train_bin.py 
+============================================================
+Token Sequence Occurrence Counting Tool
+============================================================
+Loading tokenizer: hf_tokenizer/openwebtext-32k/tokenizer.json
+'鈥檚' -> token_ids: [164, 187, 99, 161, 104, 205]
+''s' -> token_ids: [382]
+'’s' -> token_ids: [286, 83]
+'‘s' -> token_ids: [4719, 83]
+------------------------------------------------------------
+File size: 5.08 GB
+Total tokens: 2,727,044,684
+Target token sequences:
+  '鈥檚': [164, 187, 99, 161, 104, 205]
+  ''s': [382]
+  '’s': [286, 83]
+  '‘s': [4719, 83]
+Start counting...
+Counting progress: 100%|██████████████████████████████████| 2727044684/2727044684 [03:48<00:00, 11959960.05tokens/s]
+
+Counting results:
+----------------------------------------
+'鈥檚' (sequence: [164, 187, 99, 161, 104, 205]): 2 times
+''s' (sequence: [382]): 8,062,975 times
+'’s' (sequence: [286, 83]): 11,253,531 times
+'‘s' (sequence: [4719, 83]): 24,540 times
+
+Total tokens: 2,727,044,684
+Processing time: 228.02 seconds
+============================================================
+(cs336-basics) [root:assignment1-basics]$ bash data_utils/count_word_from_train_txt.sh 
+Counting character occurrences in data/owt_train.txt...
+File size: 12G
+Occurrences of '鈥檚'
+2
+Occurrences of ''s'
+8131046
+Occurrences of '’s'
+11277977
+Occurrences of '‘s'
+71423
+
+Counting completed!
+\end{lstlisting}
+
+\textbf{Some Findings:}
+
+The results from both the raw text and the tokenized data are consistent. They reveal that the dataset is dominated by standard apostrophes, with \lstinline{’s} (right single quote) being the most frequent variant (over 11 million times), followed by \lstinline{'s} (straight quote, over 8 million times).
+
+Crucially, the garbled sequence \lstinline{鈥檚} appears only twice in the entire 12GB dataset. This confirms that the issue is not widespread data corruption but rather a rare artifact, likely from the original web scraping process.
+
+The paradox that the model reproduces this extremely rare pattern invites some interesting speculation. Here are a couple of my hypotheses:
+
+\textbf{1. Sensitivity to Low-Probability Patterns:} This behavior might indicate that the model is highly sensitive to every pattern it has learned, even those with vanishingly low probabilities. During a degenerative state where the model loses long-range context, it might latch onto any learned sequence that fits the immediate context. The fact that it can recall and repeat a pattern seen only twice suggests that no training example is truly forgotten, merely assigned a low probability.
+
+\textbf{2. Preference for Longer Token Sequences:} An alternative hypothesis is that the model may develop a preference for longer token sequences to fulfill certain grammatical roles. The garbled \lstinline{鈥檚} is tokenized into a sequence of six tokens, whereas the correct \lstinline{'s} and \lstinline{’s} are tokenized into one and two tokens, respectively. It's conceivable that when the model is struggling to form a possessive, it defaults to a longer, more "descriptive" token sequence it has learned, even if it's incorrect. This is a fascinating thought, as it might offer a glimpse into why techniques like Chain-of-Thought (CoT) are effective—they guide the model to solve problems through longer, more deliberate sequences of tokens.

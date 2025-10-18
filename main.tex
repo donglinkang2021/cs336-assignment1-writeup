@@ -1,6 +1,6 @@
 \documentclass{article}
 \usepackage[authoryear, round]{natbib} % Citation format
-\usepackage{hyperref}   % Hyperlink support
+\usepackage[hidelinks]{hyperref}   % Hyperlink support
 \usepackage{tcolorbox}
 \usepackage{amsmath}    % Math formula support
 \usepackage{amssymb}    % Math symbol support
@@ -22,6 +22,8 @@
 \usepackage{tikz} % TikZ drawing support
 \usetikzlibrary{mindmap, shadings}
 \usepackage{enumitem} % Enhanced list environments
+\usepackage{xeCJK}  % Support for Chinese characters
+\setCJKmainfont[BoldFont={SimHei}]{SimSun}
 
 \usepackage{xcolor}    % Color support
 \definecolor{lightgray}{gray}{0.90} % Light gray
@@ -105,10 +107,10 @@
 \input{sections/6-generating.tex}
 \input{sections/7-experiments.tex}
 
+\newpage
 \bibliographystyle{plainnat}
 \bibliography{ref}
 
-\newpage
 \appendix
 \input{sections/appendix.tex}
 
