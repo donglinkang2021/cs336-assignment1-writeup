@@ -265,5 +265,67 @@ You will train a model under the leaderboard rules above with the goal of minimi
 
 \begin{answer}
 
+\textbf{Final Result:} I achieved a validation loss of \textbf{3.335} at the 90-minute mark, ranking \textbf{24th} on the global leaderboard\footnote{Leaderboard: \url{https://github.com/stanford-cs336/assignment1-basics-leaderboard}}. The learning curves are shown in Figure~\ref{fig:leaderboard_experiments}.
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/leaderboard_experiments.pdf}
+    \caption{Leaderboard submission learning curves showing training loss (left) and validation loss (right) vs. relative time in minutes. The red dashed line marks the 90-minute budget limit, with the final validation loss of 3.335 annotated.}
+    \label{fig:leaderboard_experiments}
+\end{figure}
+
+\textbf{Key Modifications:}
+
+Within the constraints of 80GB GPU memory and 1.5-hour wall-clock time using only the OpenWebText training set, I implemented the following modifications:
+
+- \textbf{Model Size:} Scaled up to GPT-2 Small size (d\_model=768, d\_ff=2048, n\_head=12, n\_layer=12)
+
+- \textbf{QK Normalization:} Added RMSNorm to query and key projections before RoPE for stability
+
+- \textbf{Muon Optimizer:} Adopted the Muon optimizer (inspired by modded-nanogpt) for  efficient optimization
+
+- \textbf{Weight Tying:} Tied the token embedding and output projection weights
+
+- \textbf{LR Schedule:} Used cosine annealing from 1e-2 to 0 over 30,000 iterations with 2,000 warmup steps
+
+\textbf{Ablation Study:}
+
+Table~\ref{tab:leaderboard_ablations} summarizes the impact of each modification on validation loss:
+
+\begin{table}[!htb]
+\centering
+\caption{Ablation study showing the impact of different modifications on validation loss.}
+\label{tab:leaderboard_ablations}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Configuration} & \textbf{Val Loss} & \textbf{$\Delta$ Loss} \\
+\midrule
+\multicolumn{3}{l}{\textit{Model Size}} \\
+\addlinespace[0.5ex]
+Baseline (d\_model=512, n\_layer=4) & 3.695 & - \\
+GPT-2 Small (d\_model=768, n\_layer=12) & 3.335 & -0.360 \\
+GPT-2 Small + (n\_layer=16) & 3.264 & -0.071 \\
+\addlinespace[1ex]
+\multicolumn{3}{l}{\textit{Optimizer \& Learning Rate (GPT-2 Small)}} \\
+\addlinespace[0.5ex]
+AdamW (lr=1e-3) & 3.482 & - \\
+AdamW (lr=1e-2) & 3.436 & -0.046 \\
+AdamW (lr=1e-3) + Muon (lr=3e-2) & 3.454 & -0.028 \\
+AdamW (lr=1e-2) + Muon (lr=3e-2) & 3.427 & -0.055 \\
+\addlinespace[1ex]
+\multicolumn{3}{l}{\textit{Weight Tying}} \\
+\addlinespace[0.5ex]
+Baseline w/o weight tying & 3.753 & - \\
+Baseline w/ weight tying & 3.695 & -0.058 \\
+GPT-2 Small w/o weight tying & 3.427 & - \\
+GPT-2 Small w/ weight tying & 3.362 & -0.065 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Analysis:}
+
+The most significant improvement ($\Delta = -0.360$) came from scaling to GPT-2 Small architecture, demonstrating that model capacity is crucial given sufficient compute budget. Weight tying consistently improved performance across model sizes ($\Delta \approx -0.06$), reducing parameter count while maintaining expressiveness. The Muon optimizer combined with higher learning rates showed modest gains over AdamW alone. QK normalization provided training stability without degrading final performance. Further scaling to 16 layers showed additional gains but exceeded the 90-minute time budget.
+
 \end{answer}
 
