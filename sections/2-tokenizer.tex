@@ -138,7 +138,7 @@ tests/test_train_bpe.py::test_train_bpe_special_tokens PASSED
 \end{lstlisting}
 
 \begin{answer}
-I have implemented a BPE tokenizer training function that can be found at: \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/bpe.py#L11}{bpe.py\#L11}.
+I have implemented a BPE tokenizer training function that can be found at: \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/cs336_basics/bpe.py#L11}{bpe.py\#L11}.
 
 The implementation successfully passes all tests in \lstinline{uv run pytest tests/test_train_bpe.py} with a runtime of approximately 22 seconds in my machine.
 \end{answer}
@@ -159,7 +159,7 @@ The implementation successfully passes all tests in \lstinline{uv run pytest tes
     \textbf{Deliverable}: A one-to-two sentence response.
     
     \begin{answer}
-    Since my initial implementation was too slow for the TinyStories dataset, I used the \lstinline{tokenizers.trainers.BpeTrainer} from the Hugging Face tokenizers library (code available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/data_utils/hf_train_bpe.py}{hf\_train\_bpe.py}). Training completed in 202.87 seconds (~3.38 minutes) with the longest token being 'Ġresponsibility' (15 characters), which makes sense as it's a complete meaningful word that appears frequently enough to be merged into a single token.
+    Since my initial implementation was too slow for the TinyStories dataset, I used the \lstinline{tokenizers.trainers.BpeTrainer} from the Hugging Face tokenizers library (code available at \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/data_utils/hf_train_bpe.py}{hf\_train\_bpe.py}). Training completed in 202.87 seconds (~3.38 minutes) with the longest token being 'Ġresponsibility' (15 characters), which makes sense as it's a complete meaningful word that appears frequently enough to be merged into a single token.
     \end{answer}
     
     \item Profile your code. What part of the tokenizer training process takes the most time?
@@ -208,7 +208,7 @@ Sample unique OpenWebText tokens:
 ['ylan', 'igo', 'Ġemphas', 'Ġsuburbs', 'ĠCab', 'ĠMarine', 'liable', 'ĠBrett', 'model', 'ĠSQL']
     \end{lstlisting}
     \begin{answer}
-    The OpenWebText tokenizer (32k vocab) produces more diverse tokens including technical symbols and formatting patterns (avg length: 6.34 chars, 24,717 unique tokens) with terms like 'ĠMarine' and 'ĠSQL', while the TinyStories tokenizer (10k vocab) focuses on simpler narrative vocabulary (avg length: 5.83 chars, 2,717 unique tokens) with words like 'Ġcluck' and 'Ġreluctantly', with 7,283 tokens shared between both datasets reflecting common English usage (comparison code available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/data_utils/compare_tokenizer_demo.py}{compare\_tokenizer\_demo.py}).
+    The OpenWebText tokenizer (32k vocab) produces more diverse tokens including technical symbols and formatting patterns (avg length: 6.34 chars, 24,717 unique tokens) with terms like 'ĠMarine' and 'ĠSQL', while the TinyStories tokenizer (10k vocab) focuses on simpler narrative vocabulary (avg length: 5.83 chars, 2,717 unique tokens) with words like 'Ġcluck' and 'Ġreluctantly', with 7,283 tokens shared between both datasets reflecting common English usage (comparison code available at \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/data_utils/compare_tokenizer_demo.py}{compare\_tokenizer\_demo.py}).
     \end{answer}
 \end{enumerate}
 
@@ -282,7 +282,7 @@ tests/test_tokenizer.py::test_encode_memory_usage XFAIL
 \end{lstlisting}
 
 \begin{answer}
-Code available at: \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/tokenizer.py}{tokenizer.py}.
+Code available at: \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/cs336_basics/tokenizer.py}{tokenizer.py}.
 \end{answer}
 
 \problem{tokenizer\_experiments}{Experiments with tokenizers (4 points)}
@@ -293,7 +293,7 @@ Code available at: \href{https://github.com/donglinkang2021/assignment1-basics/b
     \textbf{Deliverable}: A one-to-two sentence response.
     
     \begin{answer}
-    The TinyStories tokenizer (10K vocab) achieves 4.19 bytes/token compression ratio, while the OpenWebText tokenizer (32K vocab) achieves 4.65 bytes/token, showing that the larger vocabulary provides better compression efficiency for diverse web content (experiment code available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/data_utils/tokenizer_experiments.py}{tokenizer\_experiments.py}).
+    The TinyStories tokenizer (10K vocab) achieves 4.19 bytes/token compression ratio, while the OpenWebText tokenizer (32K vocab) achieves 4.65 bytes/token, showing that the larger vocabulary provides better compression efficiency for diverse web content (experiment code available at \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/data_utils/tokenizer_experiments.py}{tokenizer\_experiments.py}).
     \end{answer}
 
     \item What happens if you tokenize your OpenWebText sample with the TinyStories tokenizer? Compare the compression ratio and/or qualitatively describe what happens.
@@ -317,6 +317,6 @@ Code available at: \href{https://github.com/donglinkang2021/assignment1-basics/b
     \textbf{Deliverable}: A one-to-two sentence response.
 
     \begin{answer}
-    \lstinline{uint16} is appropriate because it can represent values up to 65,535, which easily accommodates our vocabulary sizes (10K and 32K tokens), while being twice as memory-efficient as \lstinline{uint32} (1.9 MB vs 3.8 MB per 1M tokens) and avoiding the 255 value limit of \lstinline{uint8}. The code to encode the datasets into \lstinline{uint16} arrays and save them as \texttt{train.bin} and \texttt{val.bin} is available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/data_utils/hf_tokenize_data.py}{hf\_tokenize\_data.py}.
+    \lstinline{uint16} is appropriate because it can represent values up to 65,535, which easily accommodates our vocabulary sizes (10K and 32K tokens), while being twice as memory-efficient as \lstinline{uint32} (1.9 MB vs 3.8 MB per 1M tokens) and avoiding the 255 value limit of \lstinline{uint8}. The code to encode the datasets into \lstinline{uint16} arrays and save them as \texttt{train.bin} and \texttt{val.bin} is available at \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/data_utils/hf_tokenize_data.py}{hf\_tokenize\_data.py}.
     \end{answer}
 \end{enumerate}

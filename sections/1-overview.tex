@@ -1,3 +1,68 @@
-\section{Assignment Overview}
+\section{Overview}
 
-This document contains my solutions to CS336 Assignment 1. Each problem is answered in detail with supporting explanations, calculations, and code where applicable.
+This document contains my solutions to every problem in \href{https://github.com/stanford-cs336/assignment1-basics/}{CS336 Assignment 1}, where I implement a transformer-based language model from scratch and conduct extensive experiments on model training and optimization.
+
+\textbf{Code Repository}
+
+All implementation code is available in my GitHub repository:
+
+\begin{enumerate}
+    \item \textbf{Main Implementation Repository}: \href{https://github.com/donglinkang2021/cs336-assignment1-basics}{donglinkang2021/cs336-assignment1-basics}
+    \begin{enumerate}
+        \item Core model implementation: \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/cs336_basics/model.py}{\lstinline{model.py}}
+        \item Training script: \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/train.py}{\lstinline{train.py}}, \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/train_muon.py}{\lstinline{train_muon.py}}
+        \item Experiment scripts: \href{https://github.com/donglinkang2021/cs336-assignment1-basics/tree/main/scripts}{\lstinline{scripts/}}
+        \item Experiment changelog: \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/docs/CHANGELOG.md}{\lstinline{CHANGELOG.md}}
+        \item Tokenize data: \href{https://github.com/donglinkang2021/cs336-assignment1-basics/tree/main/data_utils/}{\lstinline{data_utils/}}
+    \end{enumerate}
+    \item \textbf{Writeup Repository}: \href{https://github.com/donglinkang2021/cs336-assignment1-writeup}{donglinkang2021/cs336-assignment1-writeup} (this document)
+    \begin{enumerate}
+        \item Main \LaTeX{} document: \href{https://github.com/donglinkang2021/cs336-assignment1-writeup/blob/main/main.tex}{\lstinline{main.tex}}
+        \item Report sections: \href{https://github.com/donglinkang2021/cs336-assignment1-writeup/tree/main/sections}{\lstinline{sections/}}
+        \item Plotting scripts for experiments: \href{https://github.com/donglinkang2021/cs336-assignment1-writeup/tree/main/code/}{\lstinline{plot_*.py}}
+        \item The results data of experiments: \href{https://github.com/donglinkang2021/cs336-assignment1-writeup/tree/main/exps}{\lstinline{exps/}}
+        \item Bibliography: \href{https://github.com/donglinkang2021/cs336-assignment1-writeup/blob/main/ref.bib}{\lstinline{ref.bib}}
+    \end{enumerate}
+\end{enumerate}
+
+\textbf{Experiment Tracking}
+
+All experiments are tracked using Weights \& Biases (wandb) with comprehensive logging of training/validation losses, learning rates, gradient norms, entropy, and wallclock time. The experiment reports are organized by topic in Table~\ref{tab:experiments}.
+
+\begin{table}[h]
+\centering
+\caption{Overview of Experiments and W\&B Reports}
+\label{tab:experiments}
+\begin{tabular}{c c l}
+\toprule
+\textbf{Experiment} & \textbf{W\&B} & \textbf{Description} \\
+\midrule
+Learning Rate & \href{https://api.wandb.ai/links/donglinkang2021-beijing-institute-of-technology/jhz7fp86}{Link} & Tune the learning rate on TinyStories and OpenWebText datasets \\
+\addlinespace
+Batch Size & \href{https://api.wandb.ai/links/donglinkang2021-beijing-institute-of-technology/ejo2bn9n}{Link} & Impact of batch size on training performance on TinyStories \\
+\addlinespace
+Ablation Studies & \href{https://api.wandb.ai/links/donglinkang2021-beijing-institute-of-technology/c54zgdnw}{Link} & Component analysis (SwiGLU, RoPE, RMSNorm, Pre-norm) on TinyStories \\
+\addlinespace
+Main & \href{https://api.wandb.ai/links/donglinkang2021-beijing-institute-of-technology/k1na9uic}{Link} & Loss comparison between TinyStories and OpenWebText training \\
+\addlinespace
+Muon & \href{https://api.wandb.ai/links/donglinkang2021-beijing-institute-of-technology/p4xh8d7y}{Link} & Using Muon for better training performance on OpenWebText \\
+\addlinespace
+Leaderboard & \href{https://api.wandb.ai/links/donglinkang2021-beijing-institute-of-technology/yjlpxerm}{Link} & Final model training and leaderboard submission \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Results:}
+
+- Validation loss of \textbf{1.45 or better} on TinyStories dataset (as required)
+
+- Identified optimal learning rate of \textbf{0.01} through comprehensive hyperparameter search
+
+- Found batch size \textbf{128} to be optimal, achieving best validation performance in only 8.75 minutes for 10,000 iterations
+
+- Ablation studies of components (RoPE, RMSNorm, SwiGLU, Pre-norm) (as required)
+
+- Trained models on both TinyStories and OpenWebText datasets with detailed performance comparisons, and get a validation loss of \textbf{3.33508} on the leaderboard.
+
+\textbf{Document Structure:} 
+The remainder of this document is organized as follows: Section 2 covers the BPE tokenizer implementation, Section 3 details the transformer architecture, Section 4 discusses language model training objectives, Section 5 presents the training loop implementation, Section 6 covers text generation methods, and Section 7 presents comprehensive experimental results. Additional implementation details and code snippets are provided in the Appendix.

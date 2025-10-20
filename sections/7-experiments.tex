@@ -9,7 +9,7 @@ For your training and evaluation code, create experiment tracking infrastructure
 \begin{answer}
 I implemented comprehensive experiment tracking infrastructure using Weights \& Biases (wandb) integrated with Hydra for configuration management. The logging system tracks training and validation losses, learning rates, gradient norms, and wallclock time (recorded by wandb automatically) across all experiments.
 
-All experiment configurations and results are systematically logged and can be accessed through the wandb dashboard for analysis and comparison. A comprehensive code snippet of the logging setup is provided in Appendix~\ref{appendix:logging-code}. The whole training code is available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/train.py}{train.py}. And all the experiment scripts/logs can be found at \href{https://github.com/donglinkang2021/assignment1-basics/tree/main/scripts}{scripts} and \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/docs/CHANGELOG.md}{CHANGELOG.md}.
+All experiment configurations and results are systematically logged and can be accessed through the wandb dashboard for analysis and comparison. A comprehensive code snippet of the logging setup is provided in Appendix~\ref{appendix:logging-code}. The whole training code is available at \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/train.py}{train.py}. And all the experiment scripts/logs can be found at \href{https://github.com/donglinkang2021/cs336-assignment1-basics/tree/main/scripts}{scripts} and \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/docs/CHANGELOG.md}{CHANGELOG.md}.
 
 \end{answer}
 
@@ -52,7 +52,7 @@ I employed a logarithmic grid search across learning rates from $10^{-5}$ to $3 
         \label{fig:owt_learning_rate_experiments}
     \end{subfigure}
     
-    \caption{Learning rate experiments showing training loss (left), learning rate schedule (middle), and validation loss over time (right) for both datasets. The highlighted orange line represents LR=0.01, which achieved the best performance across both TinyStories and OpenWebText. Complete experiment logs/configs are available on the W\&B: \href{https://api.wandb.ai/links/donglinkang2021-beijing-institute-of-technology/g0usepk4}{Report}.}
+    \caption{Learning rate experiments showing training loss (left), learning rate schedule (middle), and validation loss over time (right) for both datasets. The highlighted orange line represents LR=0.01, which achieved the best performance across both TinyStories and OpenWebText. Complete experiment logs/configs are available on the W\&B: \href{https://api.wandb.ai/links/donglinkang2021-beijing-institute-of-technology/jhz7fp86}{Report}.}
     \label{fig:learning_rate_experiments}
 \end{figure}
 
@@ -298,7 +298,7 @@ Table~\ref{tab:leaderboard_ablations} summarizes the impact of each modification
 \label{tab:leaderboard_ablations}
 \begin{tabular}{lcc}
 \toprule
-\textbf{Configuration} & \textbf{Val Loss} & \textbf{$\Delta$ Loss} \\
+\textbf{Configuration} & \textbf{Val Loss - Min} & \textbf{$\Delta$ Loss} \\
 \midrule
 \multicolumn{3}{l}{\textit{Model Size}} \\
 \addlinespace[0.5ex]

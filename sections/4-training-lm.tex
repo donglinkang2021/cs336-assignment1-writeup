@@ -86,7 +86,7 @@ v_t &= \beta_2 v_{t-1} + (1 - \beta_2) g_t^2 \\
 \end{aligned}
 \end{equation*}
 
-where $m_t$ and $v_t$ are the first and second moment estimates, $\lambda$ is the weight decay coefficient, and the weight decay term $\lambda \theta_{t-1}$ is applied directly to the parameters. Code is available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/optimizer.py#L30}{optimizer.py\#L30}.
+where $m_t$ and $v_t$ are the first and second moment estimates, $\lambda$ is the weight decay coefficient, and the weight decay term $\lambda \theta_{t-1}$ is applied directly to the parameters. Code is available at \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/cs336_basics/optimizer.py#L30}{optimizer.py\#L30}.
 \end{answer}
 
 \problem{adamw\_accounting}{Resource accounting for training with AdamW (2 points)}
@@ -250,7 +250,7 @@ Let us compute how much memory and compute running AdamW requires. Assume we are
 Write a function that takes $t$, $\alpha_{\max}$, $\alpha_{\min}$, $T_w$ and $T_c$, and returns the learning rate $\alpha_t$ according to the scheduler defined above. Then implement \texttt{[adapters.get\_lr\_cosine\_schedule]} and make sure it passes \texttt{uv run pytest -k test\_get\_lr\_cosine\_schedule}.
 
 \begin{answer}
-    Code is available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/optimizer.py#L183}{optimizer.py\#L183}.
+    Code is available at \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/cs336_basics/optimizer.py#L183}{optimizer.py\#L183}.
 \end{answer}
 
 \begin{lstlisting}
@@ -272,7 +272,7 @@ tests/test_optimizer.py::test_get_lr_cosine_schedule PASSED
 Write a function that implements gradient clipping. Your function should take a list of parameters and a maximum $\ell_2$-norm. It should modify each parameter gradient in place. Use $\epsilon = 10^{-6}$ (the PyTorch default). Then, implement the adapter \lstinline{[adapters.run_gradient_clipping]} and make sure it passes \lstinline{uv run pytest -k test_gradient_clipping}.
 
 \begin{answer}
-Code is available at \href{https://github.com/donglinkang2021/assignment1-basics/blob/main/cs336_basics/nn_utils.py#L27}{nn\_utils.py\#L27}.
+Code is available at \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/cs336_basics/nn_utils.py#L27}{nn\_utils.py\#L27}.
 \end{answer}
 
 \begin{lstlisting}
