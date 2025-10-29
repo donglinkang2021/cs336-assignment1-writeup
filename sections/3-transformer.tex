@@ -1,3 +1,9 @@
+/*
+ * @Author: linkdom 
+ * @Date: 2025-10-29 22:46:11 
+ * @Last Modified by: xiaokang001
+ * @Last Modified time: 2025-10-29 22:48:06
+ */
 \section{Transformer Language Model Architecture}
 
 All transformer model implementations in this section are available at: \href{https://github.com/donglinkang2021/cs336-assignment1-basics/blob/main/cs336_basics/model.py}{model.py}.
@@ -705,7 +711,7 @@ class TransformerLM(nn.Module):
     
     \begin{answer}
     Per layer matrix multiplies are listed in the following Table~\ref{tab:gpt2xl_flops}. 
-    Total per layer: $90,596,966,400 \approx 90.6\text{B FLOPs}$, and for 48 layers: $4,348,654,387,200 \approx 4.35$ trillion FLOPs, and for final projection: $2 \times 1,024 \times 1,600 \times 50,257 = 165,566,873,600 \approx 165.57\text{B FLOPs}$, so the total is $4,514,221,260,800 \approx 4.51$ trillion FLOPs.
+    Total per layer: $90,596,966,400 \approx 90.6\text{B FLOPs}$, and for 48 layers: $4,348,654,387,200 \approx 4.35$ trillion FLOPs, and for final projection: $2 \times 1,024 \times 1,600 \times 50,257 = 164,682,137,600 \approx 164.68\text{B FLOPs}$\footnote{Thanks to xhs user GHOST for pointing out my original calculation error where I mistakenly wrote "50,527" instead of "50,257".}, so the total is $4,514,221,260,800 \approx 4.51$ trillion FLOPs.
     \end{answer}
 
     \begin{table}[h]
@@ -732,7 +738,7 @@ class TransformerLM(nn.Module):
     \multicolumn{3}{r}{\textbf{Total per layer:}} & \textbf{90.6B FLOPs} \\
     \multicolumn{3}{r}{\textbf{48 layers total:}} & \textbf{4.35T FLOPs} \\
     \midrule
-    Final projection & $\text{logits} = W_{\text{lm}} \cdot H$ & $2 \times T \times d_{\text{model}} \times V$ & $2 \times 1024 \times 1600 \times 50257 = 165.57$B \\
+    Final projection & $\text{logits} = W_{\text{lm}} \cdot H$ & $2 \times T \times d_{\text{model}} \times V$ & $2 \times 1024 \times 1600 \times 50257 = 164.68$B \\
     \midrule
     \multicolumn{3}{r}{\textbf{Grand total:}} & \textbf{4.51T FLOPs} \\
     \bottomrule
